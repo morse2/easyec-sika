@@ -24,20 +24,26 @@ import static com.googlecode.easyec.sika.csv.CsvSchema.DEFAULT;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-4-25
- * Time: 下午3:31
- * To change this template use File | Settings | File Templates.
+ * CSV文本操作的工厂类。
+ * <p>
+ * 该工厂类提供了处理CSV文件的一般方法
+ * </p>
+ *
+ * @author JunJie
  */
 public final class CsvFactory {
 
     private static final ThreadLocal<CsvFactory> local = new ThreadLocal<CsvFactory>();
     private static final Logger logger = LoggerFactory.getLogger(CsvFactory.class);
 
-    private CsvFactory() {
-    }
+    private CsvFactory() { }
 
+    /**
+     * 获得当前工厂类的实例对象。
+     * 该实例对象是线程安全的。
+     *
+     * @return <code>CsvFactory</code>对象
+     */
     public static CsvFactory getInstance() {
         synchronized (local) {
             CsvFactory factory = local.get();
@@ -50,26 +56,51 @@ public final class CsvFactory {
         }
     }
 
-    public <T> void write(Writer w, WorkbookWriter<T> ww) throws WorkingException {
+    /**
+     * 写方法。
+     * <p>
+     * 此方法往给定的输出流中写入文本内容。
+     * </p>
+     *
+     * @param w  输出流对象
+     * @param ww 工作本写出器对象
+     * @throws WorkingException
+     * @see #write(Writer, WorkbookWriter)
+     */
+    public void write(Writer w, WorkbookWriter ww) throws WorkingException {
         doWrite(w, ww, DEFAULT);
     }
 
-    public <T> void write(Writer w, WorkbookWriter<T> ww, CsvSchema schema) throws WorkingException {
+    /**
+     * 写方法。
+     * <p>
+     * 此方法往给定的输出流中写入文本内容，
+     * 并且可以定义CSV文件内容格式的概要信息。
+     * </p>
+     *
+     * @param w      输出流对象
+     * @param ww     工作本写出器对象
+     * @param schema CSV文件内容概要信息对象
+     * @throws WorkingException
+     * @see #write(Writer, WorkbookWriter)
+     */
+    public void write(Writer w, WorkbookWriter ww, CsvSchema schema) throws WorkingException {
         doWrite(w, ww, schema);
     }
 
-    private <T> void doWrite(Writer w, WorkbookWriter<T> ww, CsvSchema schema) throws WorkingException {
+    @SuppressWarnings("unchecked")
+    private void doWrite(Writer w, WorkbookWriter ww, CsvSchema schema) throws WorkingException {
         CSVWriter writer = new CSVWriter(
-                w,
-                schema.getSeparator(),
-                schema.getQuotechar(),
-                schema.getEscape()
+            w,
+            schema.getSeparator(),
+            schema.getQuotechar(),
+            schema.getEscape()
         );
 
         // do write header of csv
         // only get first WorkbookWriter object
         if (ww.hasMore()) {
-            WorkbookCallback<T> callback = ww.get(0);
+            WorkbookCallback<Object> callback = (WorkbookCallback<Object>) ww.get(0);
 
             callback.setDocType(CSV);
 
@@ -104,13 +135,13 @@ public final class CsvFactory {
                     writer.writeNext(list.toArray(new String[list.size()]));
                 }
 
-                List<T> ts = callback.doGrab();
+                List<Object> ts = callback.doGrab();
 
                 boolean needDoFinish = true;
                 if (!isEmpty(ts)) {
-                    for (T t : ts) {
+                    for (int i = 0; i < ts.size(); i++) {
                         try {
-                            List<WorkData> data = callback.populate(t);
+                            List<WorkData> data = callback.populate(i, ts.get(i));
                             List<String> list = new ArrayList<String>();
 
                             for (WorkData d : data) {
@@ -157,15 +188,28 @@ public final class CsvFactory {
         }
     }
 
+    /**
+     * 读方法。该方法用以读取CSV文件的内容。
+     *
+     * @param reader   读入流对象
+     * @param workbook 工作本读取器对象
+     * @throws WorkingException
+     */
     public void read(Reader reader, WorkbookReader workbook) throws WorkingException {
         doRead(reader, workbook, DEFAULT);
     }
 
-    @Deprecated
-    public void read(Reader reader, WorkbookReader workbookReader, char separator) throws WorkingException {
-        doRead(reader, workbookReader, new CsvSchema(separator));
-    }
-
+    /**
+     * 读方法。该方法用以读取CSV文件的内容。
+     * <p>
+     * 该方法同时可以定义CSV文件内容概要信息。
+     * </p>
+     *
+     * @param reader         读入流对象
+     * @param workbookReader 工作本读取器对象
+     * @param schema         CSV文件内容概要信息对象
+     * @throws WorkingException
+     */
     public void read(Reader reader, WorkbookReader workbookReader, CsvSchema schema) throws WorkingException {
         doRead(reader, workbookReader, schema == null ? DEFAULT : schema);
     }
@@ -180,13 +224,13 @@ public final class CsvFactory {
 
         try {
             CSVReader csvReader = new CSVReader(
-                    reader,
-                    schema.getSeparator(),
-                    schema.getQuotechar(),
-                    schema.getEscape(),
-                    0,
-                    schema.isStrictQuotes(),
-                    schema.isIgnoreLeadingWhiteSpace()
+                reader,
+                schema.getSeparator(),
+                schema.getQuotechar(),
+                schema.getEscape(),
+                0,
+                schema.isStrictQuotes(),
+                schema.isIgnoreLeadingWhiteSpace()
             );
 
             handler.doInit();

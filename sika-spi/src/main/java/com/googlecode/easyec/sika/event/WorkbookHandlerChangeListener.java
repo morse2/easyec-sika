@@ -1,17 +1,11 @@
 package com.googlecode.easyec.sika.event;
 
-import com.googlecode.easyec.sika.WorkPage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.EventListener;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-1-29
- * Time: 上午8:45
- * To change this template use File | Settings | File Templates.
+ * 工作本处理器之间切换的事件监听类
+ *
+ * @author JunJie
  */
 public interface WorkbookHandlerChangeListener extends EventListener {
 
@@ -20,5 +14,13 @@ public interface WorkbookHandlerChangeListener extends EventListener {
      */
     WorkbookHandlerChangeListener DEFAULT = new DefaultWorkbookHandlerChangeListener();
 
+    /**
+     * 工作本切换时触发校验的方法。
+     * 如果此方法返回真，表示程序继续处理后续的工作本信息。
+     * 哦负责略过余下的工作本信息的处理工作。
+     *
+     * @param event 工作本处理对象信息
+     * @return 真或假
+     */
     boolean accept(WorkbookHandleEvent event);
 }

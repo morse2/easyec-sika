@@ -6,14 +6,13 @@ import java.util.EventObject;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-1-29
- * Time: 上午11:40
- * To change this template use File | Settings | File Templates.
+ * 行数据事件对象
+ *
+ * @author JunJie
  */
 public class RowEvent extends EventObject {
 
+    private static final long serialVersionUID = 498901291436835945L;
     private int numberOfRow;
 
     public RowEvent(Object source, int numberOfRow) {
@@ -25,6 +24,7 @@ public class RowEvent extends EventObject {
         return numberOfRow;
     }
 
+    @SuppressWarnings("unchecked")
     public List<WorkData> getWorkData() {
         return (List<WorkData>) source;
     }

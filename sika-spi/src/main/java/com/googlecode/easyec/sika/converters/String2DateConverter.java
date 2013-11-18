@@ -1,5 +1,6 @@
 package com.googlecode.easyec.sika.converters;
 
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -36,14 +37,26 @@ public class String2DateConverter implements ColumnConverter<Date> {
         this.locale = locale;
     }
 
-    public Date convert(Object val) {
-        String v = new Object2StringConverter().convert(val);
+    public Date adorn(Object val) {
+        String v = new Object2StringConverter().adorn(val);
 
         if (isNotBlank(v)) {
             DateFormat df = new SimpleDateFormat(pattern, locale);
             try {
                 return df.parse((String) val);
             } catch (ParseException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+        return null;
+    }
+
+    public Object conceal(Date original) {
+        if (null != original) {
+            try {
+                return DateFormatUtils.format(original, pattern, locale);
+            } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
         }

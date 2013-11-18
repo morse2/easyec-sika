@@ -3,15 +3,17 @@ package com.googlecode.easyec.sika.mappings;
 import com.googlecode.easyec.sika.WorkingException;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Administrator
- * Date: 12-8-17
- * Time: 下午3:23
- * To change this template use File | Settings | File Templates.
+ * 未知列异常类。此类表示了在模型与文档列映射时候未能找到对应的列的异常。
+ *
+ * @author JunJie
  */
 public class UnknownColumnException extends WorkingException {
 
-    private static final long serialVersionUID = 8069780987180040233L;
+    private static final long serialVersionUID = -7984778088119484202L;
+
+    public UnknownColumnException() {
+        // no op
+    }
 
     public UnknownColumnException(boolean stop) {
         super(stop);

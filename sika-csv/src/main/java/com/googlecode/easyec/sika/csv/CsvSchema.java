@@ -11,18 +11,19 @@ import com.googlecode.easyec.sika.converters.Date2StringConverter;
  */
 public final class CsvSchema {
 
-    private char separator = CSVParser.DEFAULT_SEPARATOR;
-    private char quotechar = CSVParser.DEFAULT_QUOTE_CHARACTER;
-    private char escape = CSVParser.DEFAULT_ESCAPE_CHARACTER;
-    private boolean strictQuotes = CSVParser.DEFAULT_STRICT_QUOTES;
-    private boolean ignoreLeadingWhiteSpace = CSVParser.DEFAULT_IGNORE_LEADING_WHITESPACE;
-    private ColumnConverter<String> dateColumnConverter = new Date2StringConverter("yyyy-MM-dd");
+    private char                    separator               = CSVParser.DEFAULT_SEPARATOR;
+    private char                    quotechar               = CSVParser.DEFAULT_QUOTE_CHARACTER;
+    private char                    escape                  = CSVParser.DEFAULT_ESCAPE_CHARACTER;
+    private boolean                 strictQuotes            = CSVParser.DEFAULT_STRICT_QUOTES;
+    private boolean                 ignoreLeadingWhiteSpace = CSVParser.DEFAULT_IGNORE_LEADING_WHITESPACE;
+    private ColumnConverter<String> dateColumnConverter     = new Date2StringConverter("yyyy-MM-dd");
 
+    /**
+     * CSV默认的内容概要信息对象实例
+     */
     public static final CsvSchema DEFAULT = new CsvSchema();
 
-    private CsvSchema() {
-        // no op
-    }
+    private CsvSchema() { }
 
     public CsvSchema(char separator) {
         this.separator = separator;

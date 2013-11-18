@@ -6,16 +6,12 @@ import com.googlecode.easyec.sika.WorkbookRowHandler;
 import com.googlecode.easyec.sika.WorkingException;
 import org.springframework.beans.BeanWrapperImpl;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-5-8
- * Time: 下午4:06
- * To change this template use File | Settings | File Templates.
+ * 工作本行数据的注解映射方式的处理器实现类。
+ *
+ * @author JunJie
  */
 public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler {
 
@@ -33,7 +29,7 @@ public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler
 
     private void _init() {
         try {
-            genericClass = resolveGenericType(0);
+            genericClass = ClassUtils.resolveGenericType(this, 0);
         } catch (WorkingException e) {
             logger.error(e.getMessage(), e);
 
@@ -49,35 +45,15 @@ public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler
         return processObject(index, (T) bw.getWrappedInstance());
     }
 
-    protected Class resolveGenericType(int index) throws WorkingException {
-        Type genType = this.getClass().getGenericSuperclass();
-
-        if (!(genType instanceof ParameterizedType)) {
-            String msg = this.getClass().getSimpleName() + "'s superclass isn't class ParameterizedType";
-            logger.error(msg);
-
-            throw new WorkingException(msg, false);
-        }
-
-        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
-
-        if (index >= params.length || index < 0) {
-            String msg = "Index: " + index + ", Size of " + this.getClass().getSimpleName() +
-                    "'s Parameterized Type: " + params.length;
-
-            logger.error(msg);
-
-            throw new WorkingException(msg, false);
-        }
-
-        Type param = params[index];
-
-        if (param instanceof Class) {
-            return (Class) param;
-        }
-
-        return param.getClass();
-    }
-
+    /**
+     * 泛型对象处理的方法。
+     * 子类继承此类，并且实现此方法后，
+     * 用以处理具体的对象类型的数据。
+     *
+     * @param index 行号索引
+     * @param o     泛型对象
+     * @return 标识是否处理余下的行数据
+     * @throws WorkingException
+     */
     abstract public boolean processObject(int index, T o) throws WorkingException;
 }

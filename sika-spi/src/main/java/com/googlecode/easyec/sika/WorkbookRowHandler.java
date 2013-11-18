@@ -7,11 +7,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-1-28
- * Time: 下午10:53
- * To change this template use File | Settings | File Templates.
+ * 工作本行数据处理器实现类。
+ * <p>
+ * 该类定义了工作本的处理形式为逐行处理。
+ * </p>
+ *
+ * @author JunJie
  */
 public abstract class WorkbookRowHandler extends AbstractWorkbookHandler<Map<Integer, List<WorkData>>> {
 

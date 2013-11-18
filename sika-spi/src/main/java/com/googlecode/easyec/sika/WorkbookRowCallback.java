@@ -19,14 +19,6 @@ public abstract class WorkbookRowCallback<T> extends AbstractWorkbookCallback<T>
         super(header, grabber);
     }
 
-    protected WorkbookRowCallback(WorkPage workPage, Grabber<T> grabber) {
-        super(workPage, grabber);
-    }
-
-    protected WorkbookRowCallback(WorkbookHeader header, WorkPage workPage, Grabber<T> grabber) {
-        super(header, workPage, grabber);
-    }
-
     /**
      * 设置一个空行数据处理的监听器类
      *

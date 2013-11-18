@@ -9,11 +9,9 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.reverse;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Administrator
- * Date: 12-8-17
- * Time: 下午2:52
- * To change this template use File | Settings | File Templates.
+ * DOCUMENT IT
+ *
+ * @author JunJie
  */
 class ColumnEvaluator {
 
@@ -42,7 +40,7 @@ class ColumnEvaluator {
         if (isNotBlank(s)) {
             int col = 0;
 
-            char[] cs = reverse(s).toCharArray();
+            char[] cs = reverse(s.toUpperCase()).toCharArray();
 
             for (int i = 0; i < cs.length; i++) {
                 if (!ArrayUtils.contains(alphabet, cs[i])) {

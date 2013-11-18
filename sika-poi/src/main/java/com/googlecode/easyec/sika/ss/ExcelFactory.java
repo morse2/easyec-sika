@@ -6,6 +6,7 @@ import com.googlecode.easyec.sika.event.RowEvent;
 import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
 import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
 import com.googlecode.easyec.sika.event.WorkbookHandlerChangeListener;
+import com.googlecode.easyec.sika.ss.data.ExcelData;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -36,7 +37,7 @@ public final class ExcelFactory {
     private static final ThreadLocal<ExcelFactory> local = new ThreadLocal<ExcelFactory>();
     private Logger logger = LoggerFactory.getLogger(ExcelFactory.class);
 
-    private ExcelFactory() {}
+    private ExcelFactory() { }
 
     public static ExcelFactory getInstance() {
         synchronized (local) {
@@ -78,7 +79,7 @@ public final class ExcelFactory {
         }
     }
 
-    public <T> void write(InputStream in, OutputStream out, WorkbookWriter<T> writer) throws WorkingException {
+    public void write(InputStream in, OutputStream out, WorkbookWriter writer) throws WorkingException {
         Assert.notNull(out, "OutputStream object is null.");
 
         try {
@@ -88,7 +89,7 @@ public final class ExcelFactory {
         }
     }
 
-    public <T> byte[] write(InputStream in, WorkbookWriter<T> writer) throws WorkingException {
+    public byte[] write(InputStream in, WorkbookWriter writer) throws WorkingException {
         Assert.notNull(in, "InputStream object is null.");
         Assert.notNull(writer, "WorkbookWriter object is null.");
 
@@ -115,13 +116,14 @@ public final class ExcelFactory {
         }
     }
 
-    private synchronized <T> byte[] doWrite(Workbook wb, WorkbookWriter<T> writer) throws WorkingException {
+    @SuppressWarnings("unchecked")
+    private synchronized byte[] doWrite(Workbook wb, WorkbookWriter writer) throws WorkingException {
         // create a creation helper
         CreationHelper helper = wb.getCreationHelper();
 
         /*int lastSheetNum = writer.size();
         if (lastSheetNum > wb.getNumberOfSheets()) {
-            logger.warn("Excel sheets' size are greater than WorkbookCallback's." +
+            logger.warn("Excel sheetsToRemove' size are greater than WorkbookCallback's." +
                     " Sheet's size: [" + wb.getNumberOfSheets() + "]," +
                     " WorkbookCallback's size: [" + lastSheetNum + "]." +
                     " So remaining WorkbookCallback will be ignored.");
@@ -130,35 +132,47 @@ public final class ExcelFactory {
         }*/
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Set<Integer> sheets = new HashSet<Integer>();
+        Set<Integer> sheetsToRemove = new HashSet<Integer>();
 
         out:
         for (int i = 0; i < writer.size(); i++) {
-            WorkbookCallback<T> callback = writer.get(i);
-            WorkPage workPage = callback.getWorkPage();
+            WorkbookCallback<Object> callback = (WorkbookCallback<Object>) writer.get(i);
 
+            // 默认初始化一个工作页对象
+            WorkPage workPage = WorkPage.DEFAULT;
+            /*
+            判断处理回调类的对象类型，如果是ExcelRowCallback
+            类的一个实例，则从该类中获取工作页实例对象
+            */
+            if (callback instanceof ExcelCtrl) {
+                workPage = ((ExcelCtrl) callback).getWorkPage();
+            }
+
+            // 获取当前Excel模板中的工作页的索引号
             int sheetIndex = workPage.getSheetIndex();
             logger.debug("Sheet index is: [" + sheetIndex + "].");
 
             Sheet sheet;
 
             try {
+                // 从工作页标识的索引号中获取模板的工作页面
                 sheet = wb.cloneSheet(sheetIndex);
-                if (!sheets.contains(sheetIndex)) {
-                    sheets.add(sheetIndex);
-                }
+                // 标识此模板页面要被删除
+                sheetsToRemove.add(sheetIndex);
             } catch (Exception e) {
                 logger.debug(e.getMessage(), e);
 
                 throw new WorkingException(e, true);
             }
 
-            List<T> list;
+            List<Object> list;
 
             try {
                 if (isNotBlank(workPage.getSheetName())) {
                     wb.setSheetName(wb.getNumberOfSheets() - 1, workPage.getSheetName());
                 }
+
+                callback.setDocType((wb instanceof HSSFWorkbook) ? EXCEL03 : EXCEL07);
 
                 callback.doInit();
 
@@ -188,6 +202,7 @@ public final class ExcelFactory {
                                 WorkData workData = dataList[n];
 
                                 Cell cell = row.createCell(n);
+
                                 switch (workData.getWorkDataType()) {
                                     case NUMBER:
                                         cell.setCellValue(((Number) workData.getValue()).doubleValue());
@@ -196,6 +211,12 @@ public final class ExcelFactory {
                                         cell.setCellValue(((Date) workData.getValue()));
                                         break;
                                     default:
+                                        if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
+                                            CellStyle cs = wb.createCellStyle();
+                                            cs.setWrapText(true);
+                                            cell.setCellStyle(cs);
+                                        }
+
                                         cell.setCellValue(helper.createRichTextString(workData.getValue(new Object2StringConverter())));
                                 }
                             }
@@ -210,16 +231,43 @@ public final class ExcelFactory {
                     continue;
                 }
 
+                // 获取数据行的样式
+                List<Cell> firstRowCells = new ArrayList<Cell>();
+
+                Row firstRow = sheet.getRow(j);
+                if (null != firstRow) {
+                    int lastCellNum = firstRow.getLastCellNum();
+                    if (lastCellNum < firstRow.getPhysicalNumberOfCells()) {
+                        lastCellNum = firstRow.getPhysicalNumberOfCells();
+                    }
+
+                    for (int k = 0; k < lastCellNum; k++) {
+                        firstRowCells.add(firstRow.getCell(k, Row.CREATE_NULL_AS_BLANK));
+                    }
+                }
+
                 for (int k = 0; k < list.size(); k++, j++) {
                     Row row = sheet.createRow(j);
+
+                    // 设置行的样式
+                    if (null != firstRow) {
+                        CellStyle rowStyle = firstRow.getRowStyle();
+                        if (null != rowStyle) row.setRowStyle(rowStyle);
+                    }
 
                     List<WorkData> dataList = null;
 
                     try {
-                        dataList = callback.populate(list.get(k));
+                        dataList = callback.populate(k, list.get(k));
 
                         for (int m = 0; m < dataList.size(); m++) {
                             Cell cell = row.createCell(m);
+
+                            if (!firstRowCells.isEmpty() && m < firstRowCells.size()) {
+                                // 设置单元格样式
+                                CellStyle cellStyle = firstRowCells.get(m).getCellStyle();
+                                if (null != cellStyle) cell.setCellStyle(cellStyle);
+                            }
 
                             WorkData workData = dataList.get(m);
                             switch (workData.getWorkDataType()) {
@@ -230,6 +278,13 @@ public final class ExcelFactory {
                                     cell.setCellValue(((Date) workData.getValue()));
                                     break;
                                 default:
+                                    if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
+                                        CellStyle cs = cell.getCellStyle();
+                                        if (null == cs) cs = wb.createCellStyle();
+                                        cs.setWrapText(true);
+                                        cell.setCellStyle(cs);
+                                    }
+
                                     cell.setCellValue(helper.createRichTextString(workData.getValue(new Object2StringConverter())));
                             }
                         }
@@ -252,7 +307,7 @@ public final class ExcelFactory {
         }
 
         try {
-            for (Integer i : sheets) {
+            for (Integer i : sheetsToRemove) {
                 wb.removeSheetAt(i);
             }
 
@@ -309,14 +364,19 @@ public final class ExcelFactory {
                     WorkbookHandlerChangeListener workbookHandlerChangeListener = reader.getWorkbookHandlerChangeListener();
                     if (workbookHandlerChangeListener != null) {
                         boolean b = workbookHandlerChangeListener.accept(new WorkbookHandleEvent(workPage));
-                        if (!b) {
-                            break;
-                        }
+                        if (!b) break;
                     }
                 }
 
-                // start setting workbook properties
-                handler.setWorkPage(workPage);
+                /*
+                如果处理器对象类型是ExcelRowHandler，
+                则设置工作页对象实例
+                */
+                if (handler instanceof ExcelCtrl) {
+                    ((ExcelRowHandler) handler).setWorkPage(workPage);
+                }
+
+                // 设置文档类型
                 handler.setDocType((wb instanceof HSSFWorkbook) ? EXCEL03 : EXCEL07);
 
                 handler.doInit();

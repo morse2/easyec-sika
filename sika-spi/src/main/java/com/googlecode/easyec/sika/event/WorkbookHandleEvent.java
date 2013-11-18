@@ -1,30 +1,17 @@
 package com.googlecode.easyec.sika.event;
 
-import com.googlecode.easyec.sika.WorkPage;
-
 import java.util.EventObject;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-1-29
- * Time: 上午8:46
- * To change this template use File | Settings | File Templates.
+ * 工作本处理的事件对象
+ *
+ * @author JunJie
  */
 public class WorkbookHandleEvent extends EventObject {
 
-    private static final long serialVersionUID = -6653761506739545594L;
+    private static final long serialVersionUID = 3559397874359176147L;
 
-    public WorkbookHandleEvent(WorkPage source) {
+    public WorkbookHandleEvent(Object source) {
         super(source);
-    }
-
-    @Deprecated
-    public int getIndex() {
-        return getWorkPage().getSheetIndex();
-    }
-
-    public WorkPage getWorkPage() {
-        return (WorkPage) source;
     }
 }

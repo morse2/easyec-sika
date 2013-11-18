@@ -1,11 +1,12 @@
 package com.googlecode.easyec.sika;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-1-28
- * Time: 下午10:40
- * To change this template use File | Settings | File Templates.
+ * 工作本处理器类。
+ * <p>
+ * 该类定义了一个工作本处理的生命周期.
+ * </p>
+ *
+ * @author JunJie
  */
 public interface WorkbookHandler<T> {
 
@@ -62,18 +63,4 @@ public interface WorkbookHandler<T> {
      * @param docType 文档类型的枚举
      */
     void setDocType(DocType docType);
-
-    /**
-     * 返回工作本页面信息
-     *
-     * @return {@link WorkPage}
-     */
-    WorkPage getWorkPage();
-
-    /**
-     * 设置工作本页面对象信息
-     *
-     * @param workPage {@link WorkPage}
-     */
-    void setWorkPage(WorkPage workPage);
 }

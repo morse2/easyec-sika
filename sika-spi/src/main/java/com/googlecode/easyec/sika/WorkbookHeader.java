@@ -7,19 +7,17 @@ import java.util.List;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-1-29
- * Time: 上午9:24
- * To change this template use File | Settings | File Templates.
+ * 工作本头信息对象
+ *
+ * @author JunJie
  */
 public class WorkbookHeader implements Serializable {
 
-    private static final long serialVersionUID = 6113891394524166641L;
+    private static final long serialVersionUID = -5554305204194122233L;
     List<WorkData[]> headerList = new LinkedList<WorkData[]>();
     private boolean hasHeader;
-    private int headerCount;
-    private int rawHeaderCount;
+    private int     headerCount;
+    private int     rawHeaderCount;
 
     public WorkbookHeader(List<WorkData[]> headerList) {
         if (headerList == null) {

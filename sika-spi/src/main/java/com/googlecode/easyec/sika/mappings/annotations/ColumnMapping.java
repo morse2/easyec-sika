@@ -1,7 +1,7 @@
 package com.googlecode.easyec.sika.mappings.annotations;
 
 import com.googlecode.easyec.sika.converters.ColumnConverter;
-import com.googlecode.easyec.sika.converters.NoOpColumnConverter;
+import com.googlecode.easyec.sika.converters.NoOpConverter;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
 
 import java.lang.annotation.*;
@@ -43,6 +43,11 @@ public @interface ColumnMapping {
 
     /**
      * 定义实现了接口{@link ColumnValidator}的验证器。
+     * <p>
+     * 此类只可在解析工作本的时候被调用，
+     * 当数据写入工作本时候，
+     * 此属性定义的验证器类都将被忽略。
+     * </p>
      *
      * @return 返回列验证器的实现类
      * @see ColumnValidator
@@ -55,5 +60,5 @@ public @interface ColumnMapping {
      * @return 返回列数据转换器的实现类
      * @see ColumnConverter
      */
-    Class<? extends ColumnConverter> converter() default NoOpColumnConverter.class;
+    Class<? extends ColumnConverter> converter() default NoOpConverter.class;
 }

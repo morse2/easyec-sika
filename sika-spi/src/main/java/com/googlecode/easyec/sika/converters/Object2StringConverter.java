@@ -9,10 +9,14 @@ package com.googlecode.easyec.sika.converters;
  */
 public class Object2StringConverter implements ColumnConverter<String> {
 
-    public String convert(Object val) {
+    public String adorn(Object val) {
         if (val == null) return null;
         if (val instanceof String) return ((String) val);
-        if (val instanceof Number) return new Number2StringConverter().convert(val);
+        if (val instanceof Number) return new Number2StringConverter().adorn(val);
         return val.toString();
+    }
+
+    public Object conceal(String original) {
+        return original;
     }
 }

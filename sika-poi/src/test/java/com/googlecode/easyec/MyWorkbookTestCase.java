@@ -1,7 +1,7 @@
 package com.googlecode.easyec;
 
 import com.googlecode.easyec.sika.Grabber;
-import com.googlecode.easyec.sika.WorkPage;
+import com.googlecode.easyec.sika.ss.WorkPage;
 import com.googlecode.easyec.sika.WorkbookWriter;
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.ss.ExcelFactory;
@@ -25,7 +25,7 @@ public class MyWorkbookTestCase {
 
     @Test
     public void writeExcel() throws Exception {
-        WorkbookWriter<User> w = new WorkbookWriter<User>();
+        WorkbookWriter w = new WorkbookWriter();
 
         w.add(new MyWorkbookCallback(new WorkPage("My sheet 1"), new Grabber<User>() {
 
@@ -66,7 +66,7 @@ public class MyWorkbookTestCase {
         }));
 
         InputStream in = new ClassPathResource("Book1.xls").getInputStream();
-        OutputStream out = new FileOutputStream("D:/test/Book2.xls");
+        OutputStream out = new FileOutputStream("D:/Book2.xls");
 
         ExcelFactory.getInstance().write(in, out, w);
 

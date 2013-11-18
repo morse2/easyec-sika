@@ -1,20 +1,23 @@
 package com.googlecode.easyec.sika.mappings;
 
 import com.googlecode.easyec.sika.WorkingException;
+import com.googlecode.easyec.sika.validations.ColumnValidator;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-5-9
- * Time: 下午2:35
- * To change this template use File | Settings | File Templates.
+ * 列数据映射的异常类
+ *
+ * @author JunJie
  */
 public class MappingException extends WorkingException {
 
-    private static final long serialVersionUID = 283279968250263572L;
+    private static final long serialVersionUID = 5378979891560287746L;
     private String alias;
-    private int row;
-    private int col;
+    private int    row;
+    private int    col;
+
+    public MappingException(String alias) {
+        this.alias = alias;
+    }
 
     public MappingException(boolean stop, String alias) {
         super(stop);
@@ -36,22 +39,47 @@ public class MappingException extends WorkingException {
         this.alias = alias;
     }
 
+    /**
+     * 返回此异常对应的行号
+     *
+     * @return 行号，从1开始
+     */
     public int getRow() {
         return row;
     }
 
+    /**
+     * 设置此异常对应的行号
+     *
+     * @param row 行号，从1开始
+     */
     public void setRow(int row) {
         this.row = row;
     }
 
+    /**
+     * 返回此异常对应的列
+     *
+     * @return 列，从1开始
+     */
     public int getCol() {
         return col;
     }
 
+    /**
+     * 设置此异常对应的列
+     *
+     * @param col 列，从1开始
+     */
     public void setCol(int col) {
         this.col = col;
     }
 
+    /**
+     * 返回此异常的别名
+     *
+     * @return 别名，来源于{@link ColumnValidator#getAlias()}
+     */
     public String getAlias() {
         return alias;
     }

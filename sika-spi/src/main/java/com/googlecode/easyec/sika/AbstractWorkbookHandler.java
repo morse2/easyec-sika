@@ -5,11 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 /**
- * Created with IntelliJ IDEA.
- * User: ZHANG78
- * Date: 12-4-25
- * Time: 下午3:05
- * To change this template use File | Settings | File Templates.
+ * 工作本抽象的实现类。
+ * <p>
+ * 该类实现并定义了工作本处理的一般方法。
+ * </p>
+ *
+ * @author JunJie
  */
 public abstract class AbstractWorkbookHandler<T> implements WorkbookHandler<T> {
 
@@ -18,8 +19,7 @@ public abstract class AbstractWorkbookHandler<T> implements WorkbookHandler<T> {
      */
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private WorkbookHeader header;
-    private WorkPage workPage;
-    private DocType docType;
+    private DocType        docType;
 
     protected AbstractWorkbookHandler(WorkbookHeader header) {
         Assert.notNull(header, "WorkbookHeader object cannot be null.");
@@ -52,14 +52,5 @@ public abstract class AbstractWorkbookHandler<T> implements WorkbookHandler<T> {
 
     public void setDocType(DocType docType) {
         this.docType = docType;
-    }
-
-    public WorkPage getWorkPage() {
-        return workPage;
-    }
-
-    public void setWorkPage(WorkPage workPage) {
-        Assert.notNull(workPage, "WorkPage object is null.");
-        this.workPage = workPage;
     }
 }

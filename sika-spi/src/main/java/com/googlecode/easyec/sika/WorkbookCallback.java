@@ -3,11 +3,9 @@ package com.googlecode.easyec.sika;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Administrator
- * Date: 12-9-5
- * Time: 下午12:26
- * To change this template use File | Settings | File Templates.
+ * DOCUMENT IT
+ *
+ * @author JunJie
  */
 public interface WorkbookCallback<T> {
 
@@ -27,11 +25,12 @@ public interface WorkbookCallback<T> {
     /**
      * 执行数据处理并转换成文档数据的方法
      *
-     * @param o 数据对象
+     * @param index 行索引号
+     * @param o     数据对象
      * @return 返回一个列表形式的工作本数据集合
      * @throws WorkingException
      */
-    List<WorkData> populate(T o) throws WorkingException;
+    List<WorkData> populate(int index, T o) throws WorkingException;
 
     /**
      * 结束方法,该方法在完成文档操作后会被调用并且仅调用一次.
@@ -72,11 +71,4 @@ public interface WorkbookCallback<T> {
      * @param docType 文档类型的枚举
      */
     void setDocType(DocType docType);
-
-    /**
-     * 返回当前工作本的工作页面对象
-     *
-     * @return {@link WorkPage}
-     */
-    WorkPage getWorkPage();
 }

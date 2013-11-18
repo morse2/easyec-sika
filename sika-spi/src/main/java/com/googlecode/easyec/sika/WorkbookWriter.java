@@ -8,11 +8,11 @@ import static java.util.Collections.synchronizedList;
 /**
  * DOCUMENT IT
  *
- * @author JunJie.Zhang
+ * @author JunJie
  */
-public class WorkbookWriter<T> implements Workbook<WorkbookCallback<T>> {
+public class WorkbookWriter implements Workbook<WorkbookCallback<?>> {
 
-    private List<WorkbookCallback<T>> workbookCallbackList = synchronizedList(new ArrayList<WorkbookCallback<T>>());
+    private List<WorkbookCallback<?>> workbookCallbackList = synchronizedList(new ArrayList<WorkbookCallback<?>>());
 
     /**
      * 为此工作本添加一个工作页面。
@@ -24,7 +24,7 @@ public class WorkbookWriter<T> implements Workbook<WorkbookCallback<T>> {
      * @param callback 工作页面对象
      * @see WorkbookHandler
      */
-    public void add(WorkbookCallback<T> callback) {
+    public void add(WorkbookCallback<?> callback) {
         if (callback != null) {
             this.workbookCallbackList.add(callback);
         }
@@ -55,7 +55,7 @@ public class WorkbookWriter<T> implements Workbook<WorkbookCallback<T>> {
      * @return 返回一个工作页面对象，如果没有，则返回null
      * @see WorkbookHandler
      */
-    public WorkbookCallback<T> get(int i) {
+    public WorkbookCallback<?> get(int i) {
         return this.workbookCallbackList.get(i);
     }
 }

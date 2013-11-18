@@ -6,14 +6,10 @@ import org.springframework.util.Assert;
 
 import java.util.List;
 
-import static com.googlecode.easyec.sika.WorkPage.DEFAULT;
-
 /**
- * Created with IntelliJ IDEA.
- * User: Administrator
- * Date: 12-9-5
- * Time: 下午2:05
- * To change this template use File | Settings | File Templates.
+ * DOCUMENT IT
+ *
+ * @author JunJie
  */
 public abstract class AbstractWorkbookCallback<T> implements WorkbookCallback<T> {
 
@@ -22,27 +18,15 @@ public abstract class AbstractWorkbookCallback<T> implements WorkbookCallback<T>
      */
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private WorkbookHeader header;
-    private Grabber<T> grabber;
-    private DocType docType;
-    private WorkPage workPage = DEFAULT;
+    private Grabber<T>     grabber;
+    private DocType        docType;
 
     protected AbstractWorkbookCallback(WorkbookHeader header, Grabber<T> grabber) {
-        this(header, null, grabber);
-    }
-
-    protected AbstractWorkbookCallback(WorkPage workPage, Grabber<T> grabber) {
-        this(new WorkbookHeader(1), workPage, grabber);
-    }
-
-    protected AbstractWorkbookCallback(WorkbookHeader header, WorkPage workPage, Grabber<T> grabber) {
         Assert.notNull(header, "WorkbookHeader object cannot be null.");
         Assert.notNull(grabber, "Grabber is null.");
 
         this.header = header;
         this.grabber = grabber;
-        if (workPage != null) {
-            this.workPage = workPage;
-        }
     }
 
     /**
@@ -84,9 +68,5 @@ public abstract class AbstractWorkbookCallback<T> implements WorkbookCallback<T>
 
     public void setDocType(DocType docType) {
         this.docType = docType;
-    }
-
-    public WorkPage getWorkPage() {
-        return workPage;
     }
 }

@@ -1,7 +1,8 @@
 package com.googlecode.easyec.sika.mappings.annotations;
 
 import com.googlecode.easyec.sika.converters.ColumnConverter;
-import com.googlecode.easyec.sika.converters.NoOpColumnConverter;
+import com.googlecode.easyec.sika.converters.ModelConverter;
+import com.googlecode.easyec.sika.converters.NoOpConverter;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
 
 import java.lang.annotation.*;
@@ -48,12 +49,12 @@ public @interface ModelMapping {
     Class<? extends ColumnValidator>[] validators() default { };
 
     /**
-     * 定义一个列数据转换器的实现类。该类可以用来在正式为属性赋值前转换其值类型。<br/>
+     * 定义一个模型数据转换器的实现类。该类可以用来在正式为属性赋值前转换其值类型。<br/>
      * <b>注意：该属性只在填充对象时才有用，反向生成<code>{@link com.googlecode.easyec.sika.WorkData}</code>
      * 时，则无效。</b>
      *
      * @return 返回列数据转换器的实现类
      * @see ColumnConverter
      */
-    Class<? extends ColumnConverter> converter() default NoOpColumnConverter.class;
+    Class<? extends ModelConverter> converter() default NoOpConverter.class;
 }

@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 /**
  * 数字到字符串类型的列数据转换器类。
  * <p>
@@ -34,7 +36,7 @@ public class Number2StringConverter implements ColumnConverter<String> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public String convert(Object val) {
+    public String adorn(Object val) {
         if (val == null) {
             logger.debug("value is null.");
 
@@ -42,7 +44,7 @@ public class Number2StringConverter implements ColumnConverter<String> {
         }
 
         if (!Number.class.isAssignableFrom(val.getClass())) {
-            logger.warn("value isn't a number object, so ignore to convert.");
+            logger.warn("value isn't a number object, so ignore to adorn.");
 
             return String.valueOf(val);
         }
@@ -53,5 +55,17 @@ public class Number2StringConverter implements ColumnConverter<String> {
         }
 
         return String.valueOf(bd.doubleValue());
+    }
+
+    public Object conceal(String original) {
+        if (isNotBlank(original)) {
+            try {
+                return Double.valueOf(original);
+            } catch (NumberFormatException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+        return null;
     }
 }

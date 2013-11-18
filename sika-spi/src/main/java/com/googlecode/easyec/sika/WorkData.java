@@ -47,14 +47,14 @@ public abstract class WorkData implements Serializable {
         UNKNOWN
     }
 
-    private Object value;
+    private Object       value;
     private WorkDataType workDataType;
 
     /**
      * 构造一个默认的工作数据对象实例
      */
     protected WorkData() {
-        // default constructor
+        this(null);
     }
 
     /**
@@ -96,7 +96,7 @@ public abstract class WorkData implements Serializable {
     public final <T> T getValue(ColumnConverter<T> c) {
         Assert.notNull(c, "ColumnConverter object is null.");
 
-        return c.convert(value);
+        return c.adorn(value);
     }
 
     /**
@@ -135,9 +135,9 @@ public abstract class WorkData implements Serializable {
     @Override
     public String toString() {
         return "WorkData{" +
-                "value=" + value +
-                ", workDataType=" + workDataType +
-                '}';
+            "value=" + value +
+            ", workDataType=" + workDataType +
+            '}';
     }
 
     // static method
