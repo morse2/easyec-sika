@@ -6,6 +6,14 @@ import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.data.DefaultWorkData;
 import com.googlecode.easyec.sika.ss.ExcelRowCallback;
 import com.googlecode.easyec.sika.ss.WorkPage;
+import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
+import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.ComparisonOperator;
+import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +33,29 @@ public class MyWorkbookCallback extends ExcelRowCallback<User> {
 
     public MyWorkbookCallback(WorkPage workPage, Grabber<User> userGrabber) {
         super(workPage, userGrabber);
+    }
+
+    @Override
+    public void doInit() {
+        setInitializingSheetListener(
+            new InitializingSheetListener() {
+
+                public void doInit(InitializingSheetEvent event) {
+                    Sheet sheet = event.getSheet();
+                    SheetConditionalFormatting scf = sheet.getSheetConditionalFormatting();
+                    ConditionalFormattingRule r1 = scf.createConditionalFormattingRule(ComparisonOperator.BETWEEN, "20", "25");
+                    r1.createPatternFormatting().setFillBackgroundColor(HSSFColor.GREY_40_PERCENT.index);
+
+                    ConditionalFormattingRule r2 = scf.createConditionalFormattingRule(ComparisonOperator.GT, "25");
+                    r2.createPatternFormatting().setFillBackgroundColor(HSSFColor.LIGHT_ORANGE.index);
+
+                    scf.addConditionalFormatting(
+                        new CellRangeAddress[] { CellRangeAddress.valueOf("B2:B" + event.getTotalRows()) },
+                        new ConditionalFormattingRule[] { r1, r2 }
+                    );
+                }
+            }
+        );
     }
 
     public List<WorkData> populate(int index, User o) throws WorkingException {

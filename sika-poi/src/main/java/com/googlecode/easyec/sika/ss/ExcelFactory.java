@@ -7,6 +7,9 @@ import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
 import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
 import com.googlecode.easyec.sika.event.WorkbookHandlerChangeListener;
 import com.googlecode.easyec.sika.ss.data.ExcelData;
+import com.googlecode.easyec.sika.ss.event.ExcelSheetEventCtrl;
+import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
+import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -34,8 +37,8 @@ import static org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted;
  */
 public final class ExcelFactory {
 
-    private static final ThreadLocal<ExcelFactory> local = new ThreadLocal<ExcelFactory>();
-    private Logger logger = LoggerFactory.getLogger(ExcelFactory.class);
+    private static final ThreadLocal<ExcelFactory> local  = new ThreadLocal<ExcelFactory>();
+    private              Logger                    logger = LoggerFactory.getLogger(ExcelFactory.class);
 
     private ExcelFactory() { }
 
@@ -229,6 +232,12 @@ public final class ExcelFactory {
                 if (CollectionUtils.isEmpty(list)) {
                     logger.debug("No records were found.");
                     continue;
+                }
+
+                if (callback instanceof ExcelSheetEventCtrl) {
+                    // 出发初始化工作页的事件监听
+                    InitializingSheetListener li = ((ExcelSheetEventCtrl) callback).getInitializingSheetListener();
+                    if (null != li) li.doInit(new InitializingSheetEvent(sheet, j + list.size()));
                 }
 
                 // 获取数据行的样式

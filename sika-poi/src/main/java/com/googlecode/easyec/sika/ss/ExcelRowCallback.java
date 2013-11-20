@@ -3,6 +3,8 @@ package com.googlecode.easyec.sika.ss;
 import com.googlecode.easyec.sika.Grabber;
 import com.googlecode.easyec.sika.WorkbookHeader;
 import com.googlecode.easyec.sika.WorkbookRowCallback;
+import com.googlecode.easyec.sika.ss.event.ExcelSheetEventCtrl;
+import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
 import org.springframework.util.Assert;
 
 import static com.googlecode.easyec.sika.ss.WorkPage.DEFAULT;
@@ -12,9 +14,10 @@ import static com.googlecode.easyec.sika.ss.WorkPage.DEFAULT;
  *
  * @author JunJie
  */
-public abstract class ExcelRowCallback<T> extends WorkbookRowCallback<T> implements ExcelCtrl {
+public abstract class ExcelRowCallback<T> extends WorkbookRowCallback<T> implements ExcelCtrl, ExcelSheetEventCtrl {
 
     private WorkPage workPage = DEFAULT;
+    private InitializingSheetListener initializingSheetListener;
 
     protected ExcelRowCallback(WorkPage workPage, Grabber<T> grabber) {
         this(new WorkbookHeader(1), workPage, grabber);
@@ -33,5 +36,13 @@ public abstract class ExcelRowCallback<T> extends WorkbookRowCallback<T> impleme
     public void setWorkPage(WorkPage workPage) {
         Assert.notNull(workPage, "WorkPage object is null.");
         this.workPage = workPage;
+    }
+
+    public InitializingSheetListener getInitializingSheetListener() {
+        return initializingSheetListener;
+    }
+
+    public void setInitializingSheetListener(InitializingSheetListener initializingSheetListener) {
+        this.initializingSheetListener = initializingSheetListener;
     }
 }
