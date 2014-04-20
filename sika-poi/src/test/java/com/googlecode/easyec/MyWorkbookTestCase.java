@@ -1,7 +1,7 @@
 package com.googlecode.easyec;
 
 import com.googlecode.easyec.sika.Grabber;
-import com.googlecode.easyec.sika.ss.WorkPage;
+import com.googlecode.easyec.sika.WorkPage;
 import com.googlecode.easyec.sika.WorkbookWriter;
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.ss.ExcelFactory;

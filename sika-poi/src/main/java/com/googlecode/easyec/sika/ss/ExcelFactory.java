@@ -2,10 +2,7 @@ package com.googlecode.easyec.sika.ss;
 
 import com.googlecode.easyec.sika.*;
 import com.googlecode.easyec.sika.converters.Object2StringConverter;
-import com.googlecode.easyec.sika.event.RowEvent;
-import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
-import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
-import com.googlecode.easyec.sika.event.WorkbookHandlerChangeListener;
+import com.googlecode.easyec.sika.event.*;
 import com.googlecode.easyec.sika.ss.data.ExcelData;
 import com.googlecode.easyec.sika.ss.event.ExcelSheetEventCtrl;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
@@ -40,7 +37,7 @@ public final class ExcelFactory {
     private static final ThreadLocal<ExcelFactory> local  = new ThreadLocal<ExcelFactory>();
     private              Logger                    logger = LoggerFactory.getLogger(ExcelFactory.class);
 
-    private ExcelFactory() { }
+    private ExcelFactory() { /* no op */ }
 
     public static ExcelFactory getInstance() {
         synchronized (local) {
@@ -260,8 +257,12 @@ public final class ExcelFactory {
 
                     // 设置行的样式
                     if (null != firstRow) {
-                        CellStyle rowStyle = firstRow.getRowStyle();
-                        if (null != rowStyle) row.setRowStyle(rowStyle);
+                        try {
+                            CellStyle rowStyle = firstRow.getRowStyle();
+                            if (null != rowStyle) row.setRowStyle(rowStyle);
+                        } catch (Exception e) {
+                            // ignore this error
+                        }
                     }
 
                     List<WorkData> dataList = null;
@@ -351,17 +352,13 @@ public final class ExcelFactory {
 
             // 为每个sheet取相应索引的Handler。
             // 但是当Handler的可以用数量少于sheet数量，
-            // 那么视为读取默认一个索引号的Handler来处理。
+            // 那么就跳出此sheet及后面的sheet的处理。
             try {
                 handler = reader.get(i);
             } catch (Exception e) {
-                try {
-                    handler = reader.get(0);
-                } catch (Exception e1) {
-                    logger.error(e.getMessage(), e);
+                logger.trace(e.getMessage(), e);
 
-                    throw new WorkingException(e1, true);
-                }
+                break;
             }
 
             try {
@@ -382,7 +379,7 @@ public final class ExcelFactory {
                 则设置工作页对象实例
                 */
                 if (handler instanceof ExcelCtrl) {
-                    ((ExcelRowHandler) handler).setWorkPage(workPage);
+                    ((ExcelCtrl) handler).setWorkPage(workPage);
                 }
 
                 // 设置文档类型
@@ -395,6 +392,12 @@ public final class ExcelFactory {
                 }
 
                 handler.doFinish();
+
+                /* 工作本后置处理事件 */
+                WorkbookPostHandleListener postHandleListener = reader.getWorkbookPostHandleListener();
+                if (postHandleListener != null) {
+                    postHandleListener.postProcess(new WorkbookHandleEvent(workPage));
+                }
             } finally {
                 handler.doFinally();
             }

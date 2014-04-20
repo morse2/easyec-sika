@@ -5,7 +5,7 @@ import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.data.DefaultWorkData;
 import com.googlecode.easyec.sika.ss.ExcelRowCallback;
-import com.googlecode.easyec.sika.ss.WorkPage;
+import com.googlecode.easyec.sika.WorkPage;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
 import org.apache.poi.hssf.util.HSSFColor;

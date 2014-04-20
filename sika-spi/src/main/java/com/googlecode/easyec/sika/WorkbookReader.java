@@ -1,6 +1,7 @@
 package com.googlecode.easyec.sika;
 
 import com.googlecode.easyec.sika.event.WorkbookHandlerChangeListener;
+import com.googlecode.easyec.sika.event.WorkbookPostHandleListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,8 @@ import static java.util.Collections.synchronizedList;
 public class WorkbookReader implements Workbook<WorkbookHandler> {
 
     private WorkbookHandlerChangeListener workbookHandlerChangeListener;
+    private WorkbookPostHandleListener    workbookPostHandleListener;
+
     private List<WorkbookHandler> workbookHandlerList = synchronizedList(new ArrayList<WorkbookHandler>());
 
     /**
@@ -45,6 +48,24 @@ public class WorkbookReader implements Workbook<WorkbookHandler> {
      */
     public WorkbookHandlerChangeListener getWorkbookHandlerChangeListener() {
         return workbookHandlerChangeListener;
+    }
+
+    /**
+     * 得到当前<code>WorkbookPostHandleListener</code>对象
+     *
+     * @return {@link WorkbookPostHandleListener}
+     */
+    public WorkbookPostHandleListener getWorkbookPostHandleListener() {
+        return workbookPostHandleListener;
+    }
+
+    /**
+     * 向当前的工作本设置一个后置事件监听器。
+     *
+     * @param workbookPostHandleListener {@link WorkbookPostHandleListener}
+     */
+    public void setWorkbookPostHandleListener(WorkbookPostHandleListener workbookPostHandleListener) {
+        this.workbookPostHandleListener = workbookPostHandleListener;
     }
 
     /**

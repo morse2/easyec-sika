@@ -4,10 +4,10 @@ import com.googlecode.easyec.sika.Grabber;
 import com.googlecode.easyec.sika.WorkbookHeader;
 import com.googlecode.easyec.sika.mappings.AnnotationWorkbookRowCallback;
 import com.googlecode.easyec.sika.ss.ExcelCtrl;
-import com.googlecode.easyec.sika.ss.WorkPage;
+import com.googlecode.easyec.sika.WorkPage;
 import org.springframework.util.Assert;
 
-import static com.googlecode.easyec.sika.ss.WorkPage.DEFAULT;
+import static com.googlecode.easyec.sika.WorkPage.DEFAULT;
 
 /**
  * DOCUMENT IT

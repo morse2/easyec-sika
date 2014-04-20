@@ -1,7 +1,7 @@
 package com.googlecode.easyec.sika.ss.event;
 
 import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
-import com.googlecode.easyec.sika.ss.WorkPage;
+import com.googlecode.easyec.sika.WorkPage;
 
 /**
  * DOCUMENT IT

@@ -1,10 +1,11 @@
 package com.googlecode.easyec.sika.ss;
 
+import com.googlecode.easyec.sika.WorkPage;
 import com.googlecode.easyec.sika.WorkbookHeader;
 import com.googlecode.easyec.sika.WorkbookRowHandler;
 import org.springframework.util.Assert;
 
-import static com.googlecode.easyec.sika.ss.WorkPage.DEFAULT;
+import static com.googlecode.easyec.sika.WorkPage.DEFAULT;
 
 /**
  * DOCUMENT IT

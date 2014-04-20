@@ -1,5 +1,7 @@
 package com.googlecode.easyec.sika.ss;
 
+import com.googlecode.easyec.sika.WorkPage;
+
 /**
  * DOCUMENT IT
  *
@@ -10,7 +12,7 @@ public interface ExcelCtrl {
     /**
      * 返回工作本页面信息
      *
-     * @return {@link WorkPage}
+     * @return {@link com.googlecode.easyec.sika.WorkPage}
      */
     WorkPage getWorkPage();
 

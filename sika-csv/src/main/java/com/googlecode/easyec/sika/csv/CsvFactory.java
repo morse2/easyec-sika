@@ -6,6 +6,8 @@ import com.googlecode.easyec.sika.*;
 import com.googlecode.easyec.sika.converters.Object2StringConverter;
 import com.googlecode.easyec.sika.event.RowEvent;
 import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
+import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
+import com.googlecode.easyec.sika.event.WorkbookPostHandleListener;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -33,8 +35,8 @@ import static org.springframework.util.CollectionUtils.isEmpty;
  */
 public final class CsvFactory {
 
-    private static final ThreadLocal<CsvFactory> local = new ThreadLocal<CsvFactory>();
-    private static final Logger logger = LoggerFactory.getLogger(CsvFactory.class);
+    private static final ThreadLocal<CsvFactory> local  = new ThreadLocal<CsvFactory>();
+    private static final Logger                  logger = LoggerFactory.getLogger(CsvFactory.class);
 
     private CsvFactory() { }
 
@@ -313,6 +315,12 @@ public final class CsvFactory {
             }
 
             handler.doFinish();
+
+            /* 工作本后置处理事件 */
+            WorkbookPostHandleListener postHandleListener = workbookReader.getWorkbookPostHandleListener();
+            if (postHandleListener != null) {
+                postHandleListener.postProcess(new WorkbookHandleEvent(new WorkPage(0, null)));
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
 

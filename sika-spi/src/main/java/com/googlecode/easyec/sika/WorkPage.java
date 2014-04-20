@@ -1,4 +1,4 @@
-package com.googlecode.easyec.sika.ss;
+package com.googlecode.easyec.sika;
 
 import org.springframework.util.Assert;
 
