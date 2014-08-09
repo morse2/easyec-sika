@@ -37,7 +37,8 @@ final class AnnotationColumnMappingAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationColumnMappingAdapter.class);
 
-    static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, DocType docType) throws WorkingException {
+    static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, DocType docType)
+    throws WorkingException {
         try {
             logger.trace("Prepare to populate data of row: [" + (rowIndex + 1) + "].");
 
@@ -65,7 +66,8 @@ final class AnnotationColumnMappingAdapter {
     }
 
     @SuppressWarnings({ "unchecked" })
-    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, DocType docType) throws WorkingException {
+    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, DocType docType)
+    throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
         for (PropertyDescriptor pd : pds) {
             String propertyName = pd.getName();
@@ -152,14 +154,25 @@ final class AnnotationColumnMappingAdapter {
                 try {
                     if (colIndex >= dataList.size()) {
                         if (logger.isWarnEnabled()) {
-                            logger.warn("There is expect colIndex: [" + colIndex + "], actual colIndex: ["
-                                + dataList.size() + "].");
+                            logger.warn(
+                                "There is expect colIndex: [" + colIndex + "], actual colIndex: ["
+                                + dataList.size() + "]."
+                            );
                         }
 
                         continue;
                     }
 
                     Object val = dataList.get(colIndex).getValue();
+                    // 先执行convert动作，而后在对convert后的数据进行校验
+                    ColumnConverter cc = (ColumnConverter) BeanUtils.instantiateClass(cm.converter());
+                    /*if (cc instanceof AdvancedColumnConverter) {
+                        ((AdvancedColumnConverter) cc).setTargetBean(bw.getWrappedInstance());
+                    }*/
+
+                    Object newVal = cc.adorn(val);
+                    logger.debug("The new value after converting is: [{}].", newVal);
+
                     Class<? extends ColumnValidator>[] validators = cm.validators();
                     for (Class<? extends ColumnValidator> validator : validators) {
                         ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
@@ -167,11 +180,11 @@ final class AnnotationColumnMappingAdapter {
                             ((AdvancedColumnValidator) cv).setTargetBean(bw.getWrappedInstance());
                         }*/
 
-                        if (!cv.accept(val)) {
+                        if (!cv.accept(newVal)) {
                             StringBuffer sb = new StringBuffer();
                             sb.append("An error occurred when checking type of data. field: [");
                             sb.append(propertyName).append("], Value of colIndex: [").append(colIndex);
-                            sb.append("] and value: [").append(val).append("]. Error type: [");
+                            sb.append("] and value: [").append(newVal).append("]. Error type: [");
                             sb.append(cv.getAlias()).append("]");
 
                             if (logger.isErrorEnabled()) {
@@ -186,12 +199,7 @@ final class AnnotationColumnMappingAdapter {
                         }
                     }
 
-                    ColumnConverter cc = (ColumnConverter) BeanUtils.instantiateClass(cm.converter());
-                    /*if (cc instanceof AdvancedColumnConverter) {
-                        ((AdvancedColumnConverter) cc).setTargetBean(bw.getWrappedInstance());
-                    }*/
-
-                    bw.setPropertyValue(propertyName, cc.adorn(val));
+                    bw.setPropertyValue(propertyName, newVal);
                 } catch (IndexOutOfBoundsException e) {
                     if (logger.isErrorEnabled()) {
                         StringBuffer sb = new StringBuffer();
@@ -218,8 +226,10 @@ final class AnnotationColumnMappingAdapter {
                     }
 
                     if (logger.isErrorEnabled()) {
-                        logger.error("Some errors have been occurred at row: [" + (rowIndex + 1) + "]." +
-                            " Check it, please! Exception: " + e.getMessage());
+                        logger.error(
+                            "Some errors have been occurred at row: [" + (rowIndex + 1) + "]." +
+                            " Check it, please! Exception: " + e.getMessage()
+                        );
                     }
 
                     throw new WorkingException(e, true);
@@ -315,8 +325,10 @@ final class AnnotationColumnMappingAdapter {
                     }
 
                     if (logger.isErrorEnabled()) {
-                        logger.error("Some errors have been occurred at column: [" + (colIndex + 1) + "]." +
-                            " Check it, please! Exception: " + e.getMessage());
+                        logger.error(
+                            "Some errors have been occurred at column: [" + (colIndex + 1) + "]." +
+                            " Check it, please! Exception: " + e.getMessage()
+                        );
                     }
 
                     throw new WorkingException(e, true);
