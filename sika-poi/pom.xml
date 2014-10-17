@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.googlecode.easyec</groupId>
         <artifactId>sika</artifactId>
-        <version>0.2.2-SNAPSHOT</version>
+        <version>0.2.3-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.googlecode.easyec</groupId>
             <artifactId>sika-spi</artifactId>
-            <version>0.2.2-SNAPSHOT</version>
+            <version>0.2.3-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
