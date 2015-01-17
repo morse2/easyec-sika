@@ -8,6 +8,7 @@ import com.googlecode.easyec.sika.converters.ModelConverter;
 import com.googlecode.easyec.sika.data.DefaultWorkData;
 import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
 import com.googlecode.easyec.sika.mappings.annotations.ModelMapping;
+import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +38,12 @@ final class AnnotationColumnMappingAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationColumnMappingAdapter.class);
 
-    static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, DocType docType)
+    static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
     throws WorkingException {
         try {
             logger.trace("Prepare to populate data of row: [" + (rowIndex + 1) + "].");
 
-            _fill(rowIndex, bw, dataList, docType);
+            _fill(rowIndex, bw, dataList, strategy);
         } finally {
             logger.trace("Finish populating data of row: [" + (rowIndex + 1) + "].");
         }
@@ -66,7 +67,7 @@ final class AnnotationColumnMappingAdapter {
     }
 
     @SuppressWarnings({ "unchecked" })
-    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, DocType docType)
+    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
     throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
         for (PropertyDescriptor pd : pds) {
@@ -90,7 +91,7 @@ final class AnnotationColumnMappingAdapter {
                 }
 
                 BeanWrapper bwModel = new BeanWrapperImpl(type);
-                _fill(rowIndex, bwModel, dataList, docType);
+                _fill(rowIndex, bwModel, dataList, strategy);
 
                 try {
                     Object val = bwModel.getWrappedInstance();
@@ -139,13 +140,26 @@ final class AnnotationColumnMappingAdapter {
                     colIndex = calculateColIndex(cm.column());
                 }
 
-                if (colIndex < 0 || (docType != null && colIndex > getMaxColIndex(docType))) {
-                    if (logger.isWarnEnabled()) {
+                if (colIndex < 0) {
+                    if (logger.isTraceEnabled()) {
                         StringBuffer sb = new StringBuffer();
                         sb.append("Annotation ColumnMapper on field: [");
                         sb.append(propertyName).append("] is out of range: [");
-                        sb.append(colIndex).append("]. The value must be between in 0 and 254. So ignore it.");
-                        logger.warn(sb.toString());
+                        sb.append(colIndex).append("]. The value must be greater than 0. So ignore it.");
+                        logger.trace(sb.toString());
+                    }
+
+                    continue;
+                }
+
+                DocType docType = strategy.getDocType();
+                if (docType != null && colIndex > getMaxColIndex(docType)) {
+                    if (logger.isTraceEnabled()) {
+                        StringBuffer sb = new StringBuffer();
+                        sb.append("Annotation ColumnMapper on field: [");
+                        sb.append(propertyName).append("]. The value must be between in 0 and ");
+                        sb.append(getMaxColIndex(docType)).append(". So ignore it.");
+                        logger.trace(sb.toString());
                     }
 
                     continue;
@@ -153,10 +167,30 @@ final class AnnotationColumnMappingAdapter {
 
                 try {
                     if (colIndex >= dataList.size()) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn(
-                                "There is expect colIndex: [" + colIndex + "], actual colIndex: ["
-                                + dataList.size() + "]."
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(
+                                new StringBuffer()
+                                    .append("There is expect colIndex: [")
+                                    .append(colIndex)
+                                    .append("], actual colIndex: [")
+                                    .append(dataList.size())
+                                    .append("].")
+                                    .toString()
+                            );
+                        }
+
+                        continue;
+                    }
+
+                    // 判断当前取值索引号是否在已配置的策略范围内
+                    if (!strategy.isColumnConfigured(colIndex)) {
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(
+                                new StringBuffer()
+                                    .append("Current column index isn't in strategy which configured columns. Index: [")
+                                    .append(colIndex)
+                                    .append("], so ignore it.")
+                                    .toString()
                             );
                         }
 
@@ -165,21 +199,12 @@ final class AnnotationColumnMappingAdapter {
 
                     Object val = dataList.get(colIndex).getValue();
                     // 先执行convert动作，而后在对convert后的数据进行校验
-                    ColumnConverter cc = (ColumnConverter) BeanUtils.instantiateClass(cm.converter());
-                    /*if (cc instanceof AdvancedColumnConverter) {
-                        ((AdvancedColumnConverter) cc).setTargetBean(bw.getWrappedInstance());
-                    }*/
-
-                    Object newVal = cc.adorn(val);
+                    Object newVal = ((ColumnConverter) BeanUtils.instantiateClass(cm.converter())).adorn(val);
                     logger.debug("The new value after converting is: [{}].", newVal);
 
                     Class<? extends ColumnValidator>[] validators = cm.validators();
                     for (Class<? extends ColumnValidator> validator : validators) {
                         ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
-                        /*if (cv instanceof AdvancedColumnValidator) {
-                            ((AdvancedColumnValidator) cv).setTargetBean(bw.getWrappedInstance());
-                        }*/
-
                         if (!cv.accept(newVal)) {
                             StringBuffer sb = new StringBuffer();
                             sb.append("An error occurred when checking type of data. field: [");
@@ -217,18 +242,18 @@ final class AnnotationColumnMappingAdapter {
 
                     throw new WorkingException(e, true);
                 } catch (Exception e) {
-                    /*if (e instanceof ColumnMapperException) {
-                        throw (ColumnMapperException) e;
-                    }*/
-
                     if (e instanceof WorkingException) {
                         throw (WorkingException) e;
                     }
 
                     if (logger.isErrorEnabled()) {
                         logger.error(
-                            "Some errors have been occurred at row: [" + (rowIndex + 1) + "]." +
-                            " Check it, please! Exception: " + e.getMessage()
+                            new StringBuffer()
+                                .append("Some errors have been occurred at row: [")
+                                .append(colIndex + 1)
+                                .append("]. Check it, please! Exception: ")
+                                .append(e.getMessage())
+                                .toString()
                         );
                     }
 
@@ -327,7 +352,7 @@ final class AnnotationColumnMappingAdapter {
                     if (logger.isErrorEnabled()) {
                         logger.error(
                             "Some errors have been occurred at column: [" + (colIndex + 1) + "]." +
-                            " Check it, please! Exception: " + e.getMessage()
+                                " Check it, please! Exception: " + e.getMessage()
                         );
                     }
 

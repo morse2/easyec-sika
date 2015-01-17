@@ -4,9 +4,10 @@ import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkbookHeader;
 import com.googlecode.easyec.sika.WorkbookRowHandler;
 import com.googlecode.easyec.sika.WorkingException;
-import org.springframework.beans.BeanWrapperImpl;
 
 import java.util.List;
+
+import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.mergeBean;
 
 /**
  * 工作本行数据的注解映射方式的处理器实现类。
@@ -40,9 +41,7 @@ public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler
     @Override
     @SuppressWarnings("unchecked")
     public boolean populate(int index, List<WorkData> list) throws WorkingException {
-        BeanWrapperImpl bw = new BeanWrapperImpl(genericClass);
-        AnnotationColumnMappingAdapter.fill(index, bw, list, getDocType());
-        return processObject(index, (T) bw.getWrappedInstance());
+        return processObject(index, (T) mergeBean(index, list, getStrategy(), genericClass));
     }
 
     /**

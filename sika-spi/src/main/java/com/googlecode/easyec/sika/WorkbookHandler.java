@@ -1,5 +1,7 @@
 package com.googlecode.easyec.sika;
 
+import com.googlecode.easyec.sika.support.WorkbookStrategy;
+
 /**
  * 工作本处理器类。
  * <p>
@@ -12,8 +14,10 @@ public interface WorkbookHandler<T> {
 
     /**
      * 初始化方法,该方法在populate调用前,会被调用一次并且仅调用一次.
+     *
+     * @throws WorkingException
      */
-    void doInit();
+    void doInit() throws WorkingException;
 
     /**
      * 结束方法,该方法在完成文档操作后会被调用并且仅调用一次.
@@ -50,17 +54,14 @@ public interface WorkbookHandler<T> {
     WorkbookHeader getHeader();
 
     /**
-     * 得到当前处理的文档的类型
-     *
-     * @return 文档类型枚举
-     * @see DocType
+     * 返回当前处理的策略
      */
-    DocType getDocType();
+    WorkbookStrategy getStrategy();
 
     /**
-     * 设置当前处理的文档的类型
+     * 设置当前处理的策略
      *
-     * @param docType 文档类型的枚举
+     * @param strategy 策略对象
      */
-    void setDocType(DocType docType);
+    void setStrategy(WorkbookStrategy strategy);
 }

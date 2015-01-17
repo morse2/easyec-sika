@@ -8,6 +8,7 @@ import com.googlecode.easyec.sika.event.RowEvent;
 import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
 import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
 import com.googlecode.easyec.sika.event.WorkbookPostHandleListener;
+import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -35,8 +36,8 @@ import static org.springframework.util.CollectionUtils.isEmpty;
  */
 public final class CsvFactory {
 
-    private static final ThreadLocal<CsvFactory> local  = new ThreadLocal<CsvFactory>();
-    private static final Logger                  logger = LoggerFactory.getLogger(CsvFactory.class);
+    private static final ThreadLocal<CsvFactory> local = new ThreadLocal<CsvFactory>();
+    private static final Logger logger = LoggerFactory.getLogger(CsvFactory.class);
 
     private CsvFactory() { }
 
@@ -222,7 +223,6 @@ public final class CsvFactory {
         }
 
         WorkbookHandler handler = workbookReader.get(0);
-        handler.setDocType(CSV);
 
         try {
             CSVReader csvReader = new CSVReader(
@@ -235,7 +235,22 @@ public final class CsvFactory {
                 schema.isIgnoreLeadingWhiteSpace()
             );
 
-            handler.doInit();
+            try {
+                handler.doInit();
+            } catch (WorkingException e) {
+                logger.error(e.getMessage(), e);
+
+                if (e.isStop()) throw e;
+            }
+
+            // 获取策略对象
+            WorkbookStrategy strategy = handler.getStrategy();
+            if (strategy == null) {
+                strategy = WorkbookStrategy.DEFAULT;
+                handler.setStrategy(strategy);
+            }
+
+            strategy.setDocType(CSV);
 
             try {
                 if (handler instanceof WorkbookRowHandler) {

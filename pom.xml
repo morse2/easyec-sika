@@ -4,7 +4,7 @@
 
     <groupId>com.googlecode.easyec</groupId>
     <artifactId>sika</artifactId>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.2.4-SNAPSHOT</version>
     <modules>
         <module>sika-spi</module>
         <module>sika-csv</module>

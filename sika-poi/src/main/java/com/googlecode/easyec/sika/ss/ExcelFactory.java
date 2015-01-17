@@ -7,6 +7,7 @@ import com.googlecode.easyec.sika.ss.data.ExcelData;
 import com.googlecode.easyec.sika.ss.event.ExcelSheetEventCtrl;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
+import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -34,8 +35,8 @@ import static org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted;
  */
 public final class ExcelFactory {
 
-    private static final ThreadLocal<ExcelFactory> local  = new ThreadLocal<ExcelFactory>();
-    private              Logger                    logger = LoggerFactory.getLogger(ExcelFactory.class);
+    private static final ThreadLocal<ExcelFactory> local = new ThreadLocal<ExcelFactory>();
+    private Logger logger = LoggerFactory.getLogger(ExcelFactory.class);
 
     private ExcelFactory() { /* no op */ }
 
@@ -369,23 +370,35 @@ public final class ExcelFactory {
                 if (i > 0) {
                     WorkbookHandlerChangeListener workbookHandlerChangeListener = reader.getWorkbookHandlerChangeListener();
                     if (workbookHandlerChangeListener != null) {
-                        boolean b = workbookHandlerChangeListener.accept(new WorkbookHandleEvent(workPage));
-                        if (!b) break;
+                        if (!workbookHandlerChangeListener.accept(new WorkbookHandleEvent(workPage)))
+                            break;
                     }
                 }
 
                 /*
-                如果处理器对象类型是ExcelRowHandler，
+                如果处理器对象类型是ExcelCtrl，
                 则设置工作页对象实例
                 */
                 if (handler instanceof ExcelCtrl) {
                     ((ExcelCtrl) handler).setWorkPage(workPage);
                 }
 
-                // 设置文档类型
-                handler.setDocType((wb instanceof HSSFWorkbook) ? EXCEL03 : EXCEL07);
+                try {
+                    handler.doInit();
+                } catch (WorkingException e) {
+                    logger.error(e.getMessage(), e);
 
-                handler.doInit();
+                    if (e.isStop()) throw e;
+                }
+
+                // 获取文档策略对象
+                WorkbookStrategy strategy = handler.getStrategy();
+                if (strategy == null) {
+                    strategy = WorkbookStrategy.DEFAULT;
+                    handler.setStrategy(strategy);
+                }
+
+                strategy.setDocType((wb instanceof HSSFWorkbook) ? EXCEL03 : EXCEL07);
 
                 if (handler instanceof WorkbookRowHandler) {
                     processSheetPerRow((WorkbookRowHandler) handler, sheet, fe);
