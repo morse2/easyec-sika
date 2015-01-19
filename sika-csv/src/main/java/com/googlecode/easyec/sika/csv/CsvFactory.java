@@ -105,11 +105,24 @@ public final class CsvFactory {
         if (ww.hasMore()) {
             WorkbookCallback<Object> callback = (WorkbookCallback<Object>) ww.get(0);
 
-            callback.setDocType(CSV);
-
             try {
-                // call init method.
-                callback.doInit();
+                try {
+                    // call init method.
+                    callback.doInit();
+                } catch (WorkingException e) {
+                    logger.error(e.getMessage(), e);
+
+                    if (e.isStop()) throw e;
+                }
+
+                WorkbookStrategy strategy = callback.getStrategy();
+                if (strategy == null) {
+                    strategy = WorkbookStrategy.DEFAULT;
+
+                    callback.setStrategy(strategy);
+                }
+
+                strategy.setDocType(CSV);
 
                 // write headers
                 WorkbookHeader header = callback.getHeader();

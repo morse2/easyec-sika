@@ -23,6 +23,7 @@ import java.util.TreeMap;
 
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.calculateColIndex;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.getMaxColIndex;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * 数据列注解形式映射的适配器类。
@@ -49,11 +50,11 @@ final class AnnotationColumnMappingAdapter {
         }
     }
 
-    static synchronized List<WorkData> refill(BeanWrapper bw, DocType docType) throws WorkingException {
+    static synchronized List<WorkData> refill(BeanWrapper bw, WorkbookStrategy strategy) throws WorkingException {
         Map<Integer, WorkData> map = new TreeMap<Integer, WorkData>();
         List<WorkData> list = new ArrayList<WorkData>();
 
-        _refill(bw, map, docType);
+        _refill(bw, map, strategy);
         Integer[] keys = map.keySet().toArray(new Integer[map.size()]);
         // get maximum key
         Integer maxKey = keys[keys.length - 1];
@@ -135,11 +136,11 @@ final class AnnotationColumnMappingAdapter {
             if (m.isAnnotationPresent(ColumnMapping.class)) {
                 ColumnMapping cm = m.getAnnotation(ColumnMapping.class);
 
-                int colIndex = cm.index();
-                if (colIndex < 0) { // do parse column attribute
-                    colIndex = calculateColIndex(cm.column());
-                }
+                String col = cm.columnForRead();
+                if (isBlank(col)) col = cm.column();
+                logger.debug("Column [{}] will be read.", col);
 
+                int colIndex = calculateColIndex(col);
                 if (colIndex < 0) {
                     if (logger.isTraceEnabled()) {
                         StringBuffer sb = new StringBuffer();
@@ -264,7 +265,7 @@ final class AnnotationColumnMappingAdapter {
     }
 
     @SuppressWarnings("unchecked")
-    private static void _refill(BeanWrapper bw, Map<Integer, WorkData> map, DocType docType) throws WorkingException {
+    private static void _refill(BeanWrapper bw, Map<Integer, WorkData> map, WorkbookStrategy strategy) throws WorkingException {
         PropertyDescriptor[] descriptors = bw.getPropertyDescriptors();
         for (PropertyDescriptor descriptor : descriptors) {
             String propertyName = descriptor.getName();
@@ -292,7 +293,7 @@ final class AnnotationColumnMappingAdapter {
 
                 BeanWrapperImpl beanWrapper = new BeanWrapperImpl(type);
                 beanWrapper.setWrappedInstance(val);
-                _refill(beanWrapper, map, docType);
+                _refill(beanWrapper, map, strategy);
 
                 continue;
             }
@@ -300,17 +301,31 @@ final class AnnotationColumnMappingAdapter {
             if (m.isAnnotationPresent(ColumnMapping.class)) {
                 ColumnMapping cm = m.getAnnotation(ColumnMapping.class);
 
-                int colIndex = cm.index();
-                if (colIndex < 0) { // do parse column attribute
-                    colIndex = calculateColIndex(cm.column());
-                }
+                String col = cm.columnForWrite();
+                if (isBlank(col)) col = cm.column();
+                logger.debug("Column [{}] will be wrote.", col);
 
-                if (colIndex < 0 || (docType != null && colIndex > getMaxColIndex(docType))) {
+                int colIndex = calculateColIndex(col);
+                if (colIndex < 0) {
                     if (logger.isWarnEnabled()) {
                         StringBuffer sb = new StringBuffer();
                         sb.append("Annotation ColumnMapper on field: [");
                         sb.append(propertyName).append("] is out of range: [");
-                        sb.append(colIndex).append("]. The value must be between in 0 and 254. So ignore it.");
+                        sb.append(colIndex).append("]. The value must be greater than 0. So ignore it.");
+                        logger.warn(sb.toString());
+                    }
+
+                    continue;
+                }
+
+                DocType docType = strategy.getDocType();
+                if (docType != null && colIndex > getMaxColIndex(docType)) {
+                    if (logger.isWarnEnabled()) {
+                        StringBuffer sb = new StringBuffer();
+                        sb.append("Annotation ColumnMapper on field: [");
+                        sb.append(propertyName).append("] is out of range: [");
+                        sb.append(colIndex).append("]. The value must be between in 0 and ");
+                        sb.append(getMaxColIndex(docType)).append(". So ignore it.");
                         logger.warn(sb.toString());
                     }
 
@@ -351,8 +366,12 @@ final class AnnotationColumnMappingAdapter {
 
                     if (logger.isErrorEnabled()) {
                         logger.error(
-                            "Some errors have been occurred at column: [" + (colIndex + 1) + "]." +
-                                " Check it, please! Exception: " + e.getMessage()
+                            new StringBuffer()
+                                .append("Some errors have been occurred at column: [")
+                                .append((colIndex + 1))
+                                .append("]. Check it, please! Exception: ")
+                                .append(e.getMessage())
+                                .toString()
                         );
                     }
 
