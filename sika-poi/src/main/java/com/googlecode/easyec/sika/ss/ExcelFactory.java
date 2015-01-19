@@ -173,9 +173,22 @@ public final class ExcelFactory {
                     wb.setSheetName(wb.getNumberOfSheets() - 1, workPage.getSheetName());
                 }
 
-                callback.setDocType((wb instanceof HSSFWorkbook) ? EXCEL03 : EXCEL07);
+                try {
+                    callback.doInit();
+                } catch (WorkingException e) {
+                    logger.error(e.getMessage(), e);
 
-                callback.doInit();
+                    if (e.isStop()) throw e;
+                }
+
+                WorkbookStrategy strategy = callback.getStrategy();
+                if (strategy == null) {
+                    strategy = WorkbookStrategy.DEFAULT;
+
+                    callback.setStrategy(strategy);
+                }
+
+                strategy.setDocType((wb instanceof HSSFWorkbook) ? EXCEL03 : EXCEL07);
 
                 try {
                     list = callback.doGrab();

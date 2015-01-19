@@ -17,29 +17,38 @@ import java.lang.annotation.*;
 public @interface ColumnMapping {
 
     /**
-     * 映射到工作本中的列索引号。
-     * <p>
-     * Max columns in Excel 2003：256
-     * <br/>
-     * Max columns in Excel 2007：16384
-     * </p>
-     *
-     * @return 列的索引编号
-     */
-    int index() default Integer.MIN_VALUE;
-
-    /**
      * 映射到工作本中的列字母。
+     * 该属性定义了从工作本读取或写入工作本的列。
      * 列用根据Excel中定义的字母为准，且字母必须为大写。
      * <p>
-     * Max column name in Excel 2003：IV
+     * Max column name in Excel 2003：IV（256）
      * <br/>
-     * Max column name in Excel 2007：XFD
+     * Max column name in Excel 2007：XFD（16384）
      * </p>
      *
      * @return 列字母
      */
     String column() default "";
+
+    /**
+     * 映射到工作本中的列字母。
+     * 该属性只用于从工作本中读取时，
+     * 定义的要被解析的列。
+     * 其规则与{@link #column}一致
+     *
+     * @return 列字母
+     */
+    String columnForRead() default "";
+
+    /**
+     * 映射到工作本中的列字母。
+     * 该属性只用于将字段值写入工作本时，
+     * 定义的要被解析的列。
+     * 其规则与{@link #column}一致
+     *
+     * @return 列字母
+     */
+    String columnForWrite() default "";
 
     /**
      * 定义实现了接口{@link ColumnValidator}的验证器。
