@@ -258,7 +258,7 @@ final class AnnotationColumnMappingAdapter {
                         );
                     }
 
-                    throw new WorkingException(e, true);
+                    throw new MappingException(e, true, "INTERNAL_ERR");
                 }
             }
         }

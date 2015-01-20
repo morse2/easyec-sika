@@ -10,7 +10,6 @@ import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
 import com.googlecode.easyec.sika.event.WorkbookPostHandleListener;
 import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -296,24 +295,16 @@ public final class CsvFactory {
                     String[] line;
                     for (int i = header.getHeaderCount(); (line = csvReader.readNext()) != null; i++) {
                         List<WorkData> list = new ArrayList<WorkData>();
-                        boolean isAllNull = true;
 
                         try {
                             for (int j = 0; j < line.length; j++) {
-                                String val = line[j];
-                                if (StringUtils.isNotBlank(val)) {
-                                    isAllNull = false;
-                                }
-
-                                list.add(WorkData.createCellWorkData(val, i, j));
+                                list.add(WorkData.createCellWorkData(line[j], i, j));
                             }
 
-                            if (isAllNull) {
-                                WorkbookBlankRowListener blankRowListeners = rowHandler.getBlankRowListeners();
-                                if (blankRowListeners != null) {
-                                    boolean b = blankRowListeners.accept(new RowEvent(list, i));
-                                    if (!b) continue;
-                                }
+                            WorkbookBlankRowListener blankRowListeners = rowHandler.getBlankRowListeners();
+                            if (blankRowListeners != null) {
+                                boolean b = blankRowListeners.accept(new RowEvent(list, i));
+                                if (!b) break;
                             }
 
                             Map<Integer, List<WorkData>> map = new LinkedHashMap<Integer, List<WorkData>>();

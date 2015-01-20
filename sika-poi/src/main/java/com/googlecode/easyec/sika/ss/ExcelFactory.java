@@ -445,7 +445,6 @@ public final class ExcelFactory {
 
             Row row = sheet.getRow(j);
 
-            boolean isAllNull = true;
             List<WorkData> list = new ArrayList<WorkData>();
             Map<Integer, List<WorkData>> map = new HashMap<Integer, List<WorkData>>();
 
@@ -462,26 +461,15 @@ public final class ExcelFactory {
                 }
 
                 for (int k = 0; k < lastCellNum; k++) {
-                    Object val = getCellContent(row.getCell(k), fe);
-                    if (isAllNull && val != null) {
-                        if (val instanceof String) {
-                            if (isNotBlank((String) val)) {
-                                isAllNull = false;
-                            }
-                        } else {
-                            isAllNull = false;
-                        }
-                    }
-
-                    list.add(WorkData.createCellWorkData(val, j, k));
+                    list.add(
+                        WorkData.createCellWorkData(getCellContent(row.getCell(k), fe), j, k)
+                    );
                 }
 
-                if (isAllNull) {
-                    WorkbookBlankRowListener blankRowListeners = handler.getBlankRowListeners();
-                    if (blankRowListeners != null) {
-                        boolean b = blankRowListeners.accept(new RowEvent(list, j + 1));
-                        if (!b) break;
-                    }
+                WorkbookBlankRowListener blankRowListeners = handler.getBlankRowListeners();
+                if (blankRowListeners != null) {
+                    boolean b = blankRowListeners.accept(new RowEvent(list, j + 1));
+                    if (!b) break;
                 }
 
                 map.put(j, list);

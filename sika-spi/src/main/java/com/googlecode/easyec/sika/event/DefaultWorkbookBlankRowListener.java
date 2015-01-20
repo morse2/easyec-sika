@@ -4,8 +4,9 @@ import com.googlecode.easyec.sika.WorkData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
+
+import static com.googlecode.easyec.sika.WorkData.WorkDataType.NULL;
 
 /**
  * 默认空行监听器类。
@@ -18,8 +19,12 @@ public class DefaultWorkbookBlankRowListener implements WorkbookBlankRowListener
 
     public boolean accept(RowEvent event) {
         List<WorkData> list = event.getWorkData();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Row: [" + event.getNumberOfRow() + "]. " + Arrays.toString(list.toArray()));
+        for (WorkData data : list) {
+            if (!NULL.equals(data.getWorkDataType())) {
+                logger.debug("The row [{}] is not blank.", event.getNumberOfRow());
+
+                return true;
+            }
         }
 
         return false;
