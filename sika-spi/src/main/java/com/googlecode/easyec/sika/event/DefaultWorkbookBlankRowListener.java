@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static com.googlecode.easyec.sika.WorkData.WorkDataType.NULL;
+import static com.googlecode.easyec.sika.WorkData.WorkDataType.STRING;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.calculateColumnIndex;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * 默认空行监听器类。
@@ -42,8 +44,21 @@ public class DefaultWorkbookBlankRowListener implements WorkbookBlankRowListener
     public boolean accept(RowEvent event) {
         List<WorkData> list = event.getWorkData();
         for (int i = 0; i < list.size() && i < lastColIndex; i++) {
-            if (!NULL.equals(list.get(i).getWorkDataType())) {
-                logger.debug("The row [{}] is not blank.", event.getNumberOfRow());
+            WorkData data = list.get(i);
+            if (STRING.equals(data.getWorkDataType())) {
+                if (isNotBlank((String) data.getValue())) {
+                    logger.debug("The cell [{}, {}] is not blank.",
+                        event.getNumberOfRow(), (i + 1));
+
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (!NULL.equals(data.getWorkDataType())) {
+                logger.debug("The cell [{}, {}] is not blank.",
+                    event.getNumberOfRow(), (i + 1));
 
                 return true;
             }
