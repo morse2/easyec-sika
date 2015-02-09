@@ -20,7 +20,9 @@ public class String2NumberConverter implements ColumnConverter<Double> {
         if (!(val instanceof String)) return null;
 
         try {
-            return Double.valueOf((String) val);
+            return Double.valueOf(
+                ((String) val).replaceAll(",", "")
+            );
         } catch (Exception e) {
             return null;
         }
