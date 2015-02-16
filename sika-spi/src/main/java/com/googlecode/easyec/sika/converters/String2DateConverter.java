@@ -38,6 +38,7 @@ public class String2DateConverter implements ColumnConverter<Date> {
     }
 
     public Date adorn(Object val) {
+        if (val instanceof Date) return (Date) val;
         String v = new Object2StringConverter().adorn(val);
 
         if (isNotBlank(v)) {
