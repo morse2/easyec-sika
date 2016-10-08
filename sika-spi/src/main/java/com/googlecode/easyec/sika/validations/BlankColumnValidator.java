@@ -1,5 +1,7 @@
 package com.googlecode.easyec.sika.validations;
 
+import com.googlecode.easyec.sika.Constants;
+
 /**
  * 空指针验证器类。
  * <p>
@@ -8,13 +10,13 @@ package com.googlecode.easyec.sika.validations;
  *
  * @author JunJie
  */
-public class BlankColumnValidator implements ColumnValidator {
+public class BlankColumnValidator extends AbstractColumnValidator {
 
-    public boolean accept(Object val) {
-        return val != null;
+    protected boolean doAccept(Object val) {
+        return null != val;
     }
 
     public String getAlias() {
-        return "BLANK_COLUMN";
+        return Constants.ALIAS_BLANK_COLUMN;
     }
 }

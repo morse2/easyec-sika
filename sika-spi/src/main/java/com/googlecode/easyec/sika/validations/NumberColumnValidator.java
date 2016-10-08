@@ -1,5 +1,6 @@
 package com.googlecode.easyec.sika.validations;
 
+import com.googlecode.easyec.sika.Constants;
 import org.apache.commons.lang.math.NumberUtils;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -12,9 +13,9 @@ import static org.apache.commons.lang.StringUtils.isBlank;
  *
  * @author JunJie
  */
-public class NumberColumnValidator implements ColumnValidator {
+public class NumberColumnValidator extends AbstractColumnValidator {
 
-    public boolean accept(Object val) {
+    protected boolean doAccept(Object val) {
         if (val == null) return true;
         if (val instanceof String) {
             return isBlank((String) val) || NumberUtils.isNumber(((String) val).trim());
@@ -24,6 +25,6 @@ public class NumberColumnValidator implements ColumnValidator {
     }
 
     public String getAlias() {
-        return "NOT_NUMBER";
+        return Constants.ALIAS_NOT_NUMBER;
     }
 }

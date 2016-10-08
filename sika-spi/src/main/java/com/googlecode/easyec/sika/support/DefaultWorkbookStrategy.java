@@ -9,13 +9,21 @@ import com.googlecode.easyec.sika.mappings.UnknownColumnException;
  */
 final class DefaultWorkbookStrategy extends WorkbookStrategy {
 
-    public DefaultWorkbookStrategy() { /* no op */ }
+    DefaultWorkbookStrategy() { /* no op */ }
 
-    public DefaultWorkbookStrategy(String[] columnNameList) throws UnknownColumnException {
+    DefaultWorkbookStrategy(String[] columnNameList) throws UnknownColumnException {
         super(columnNameList);
     }
 
-    public DefaultWorkbookStrategy(int[] columnIndexList) throws UnknownColumnException {
+    DefaultWorkbookStrategy(int[] columnIndexList) throws UnknownColumnException {
         super(columnIndexList);
+    }
+
+    DefaultWorkbookStrategy(String start, String end) throws UnknownColumnException {
+        super(start, end);
+    }
+
+    DefaultWorkbookStrategy(int start, int end) throws UnknownColumnException {
+        super(start, end);
     }
 }

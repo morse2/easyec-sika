@@ -1,5 +1,6 @@
 package com.googlecode.easyec.sika.validations;
 
+import com.googlecode.easyec.sika.Constants;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +13,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author JunJie
  */
-public class BlankStringColumnValidator implements ColumnValidator {
+public class BlankStringColumnValidator extends AbstractColumnValidator {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public boolean accept(Object val) {
+    protected boolean doAccept(Object val) {
         if (val != null) {
             if (val instanceof String) {
                 return StringUtils.isNotBlank((String) val);
@@ -31,6 +32,6 @@ public class BlankStringColumnValidator implements ColumnValidator {
     }
 
     public String getAlias() {
-        return "BLANK_STRING_COLUMN";
+        return Constants.ALIAS_BLANK_STRING_COLUMN;
     }
 }

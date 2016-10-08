@@ -14,7 +14,7 @@ import java.lang.annotation.*;
  * <pre>
  * public class Foo {
  *   private Bar bar;<br/>
- *   @\ModelMapper(Bar.class)
+ *   //@ModelMapper(Bar.class)
  *   public Bar getBar() { return this.bar; }
  * }<br/>
  * class Bar {

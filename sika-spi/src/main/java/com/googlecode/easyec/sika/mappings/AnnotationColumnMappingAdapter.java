@@ -9,6 +9,7 @@ import com.googlecode.easyec.sika.data.DefaultWorkData;
 import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
 import com.googlecode.easyec.sika.mappings.annotations.ModelMapping;
 import com.googlecode.easyec.sika.support.WorkbookStrategy;
+import com.googlecode.easyec.sika.validations.AbstractColumnValidator;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static com.googlecode.easyec.sika.Constants.INST_NOT_CONVERTER;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.calculateColIndex;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.getMaxColIndex;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -40,7 +42,7 @@ final class AnnotationColumnMappingAdapter {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationColumnMappingAdapter.class);
 
     static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
-    throws WorkingException {
+        throws WorkingException {
         try {
             logger.trace("Prepare to populate data of row: [" + (rowIndex + 1) + "].");
 
@@ -69,7 +71,7 @@ final class AnnotationColumnMappingAdapter {
 
     @SuppressWarnings({ "unchecked" })
     private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
-    throws WorkingException {
+        throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
         for (PropertyDescriptor pd : pds) {
             String propertyName = pd.getName();
@@ -83,7 +85,7 @@ final class AnnotationColumnMappingAdapter {
 
             Method m = pd.getReadMethod();
             // if both ModelMapping and ColumnMapper have been set at same time,
-            // then firstly ModelMapping would be processed, and ColumnMapper will be ignored.
+            // then firstly ModelMapping would be processed, and ColumnMapping will be ignored.
             if (m.isAnnotationPresent(ModelMapping.class)) {
                 ModelMapping mm = m.getAnnotation(ModelMapping.class);
                 Class<?> type = mm.value();
@@ -95,12 +97,19 @@ final class AnnotationColumnMappingAdapter {
                 _fill(rowIndex, bwModel, dataList, strategy);
 
                 try {
+                    // 获取封装的对象实例
                     Object val = bwModel.getWrappedInstance();
+                    // 初始化ModelConverter对象
+                    ModelConverter mc = BeanUtils.instantiateClass(mm.converter());
+                    // 执行转换的操作
+                    Object newVal = mc.adorn(val);
+                    logger.debug("The new value after converting is: [{}].", newVal);
+
                     Class<? extends ColumnValidator>[] validators = mm.validators();
                     for (Class<? extends ColumnValidator> validator : validators) {
                         ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
 
-                        if (!cv.accept(val)) {
+                        if (!cv.accept(newVal)) {
                             StringBuffer sb = new StringBuffer();
                             sb.append("An error occurred when checking type of data. field: [");
                             sb.append(propertyName).append("], Model value: [").append(type.getName());
@@ -112,16 +121,17 @@ final class AnnotationColumnMappingAdapter {
                             }
 
                             MappingException ex = new MappingException(sb.toString(), false, cv.getAlias());
-                            ex.setRow(rowIndex);
+                            ex.setRow(rowIndex + 1);
+
+                            if (cv instanceof AbstractColumnValidator) {
+                                ex.setSource(((AbstractColumnValidator) cv).getSource());
+                            }
 
                             throw ex;
                         }
                     }
 
-                    bw.setPropertyValue(
-                        propertyName,
-                        ((ModelConverter) BeanUtils.instantiateClass(mm.converter())).adorn(val)
-                    );
+                    bw.setPropertyValue(propertyName, newVal);
                 } catch (BeanInstantiationException e) {
                     if (logger.isErrorEnabled()) {
                         logger.error(e.getMessage(), e);
@@ -218,8 +228,12 @@ final class AnnotationColumnMappingAdapter {
                             }
 
                             MappingException ex = new MappingException(sb.toString(), false, cv.getAlias());
-                            ex.setRow(rowIndex);
-                            ex.setCol(colIndex);
+                            ex.setRow(rowIndex + 1);
+                            ex.setCol(colIndex + 1);
+
+                            if (cv instanceof AbstractColumnValidator) {
+                                ex.setSource(((AbstractColumnValidator) cv).getSource());
+                            }
 
                             throw ex;
                         }
@@ -349,7 +363,7 @@ final class AnnotationColumnMappingAdapter {
 
                         logger.warn(sb.toString());
 
-                        throw new ColumnMappingException(sb.toString(), true);
+                        throw new MappingException(sb.toString(), true, INST_NOT_CONVERTER);
                     }
 
                     map.put(colIndex, new DefaultWorkData(cc.conceal(val)));

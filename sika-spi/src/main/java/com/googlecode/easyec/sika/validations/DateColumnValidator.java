@@ -1,5 +1,7 @@
 package com.googlecode.easyec.sika.validations;
 
+import com.googlecode.easyec.sika.Constants;
+
 import java.util.Date;
 
 /**
@@ -10,13 +12,13 @@ import java.util.Date;
  *
  * @author JunJie
  */
-public class DateColumnValidator implements ColumnValidator {
+public class DateColumnValidator extends AbstractColumnValidator {
 
-    public boolean accept(Object val) {
+    protected boolean doAccept(Object val) {
         return val == null || val instanceof Date;
     }
 
     public String getAlias() {
-        return "NOT_DATE";
+        return Constants.ALIAS_NOT_DATE;
     }
 }
