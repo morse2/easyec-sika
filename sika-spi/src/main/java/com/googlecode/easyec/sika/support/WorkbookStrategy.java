@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.calculateColumnIndex;
+import static com.googlecode.easyec.sika.support.WorkbookStrategy.ExceptionBehavior.ThrowOne;
 
 /**
  * 抽象类，用于描述工作本的操作策略
@@ -34,6 +35,22 @@ public abstract class WorkbookStrategy {
     // ----- 文档类型配置 开始
     private DocType docType;
     // ----- 文档类型配置 结束
+
+    private ExceptionBehavior exceptionBehavior = ThrowOne;
+
+    /**
+     * 异常抛出行为的枚举类
+     */
+    public enum ExceptionBehavior {
+        /**
+         * 当有异常发生即抛出
+         */
+        ThrowOne,
+        /**
+         * 将所有异常包括起来，最后抛出
+         */
+        ThrowAll
+    }
 
     WorkbookStrategy() {
         this.allColumns = true;
@@ -148,6 +165,14 @@ public abstract class WorkbookStrategy {
     public void setDocType(DocType docType) {
         Assert.notNull(docType);
         this.docType = docType;
+    }
+
+    public ExceptionBehavior getExceptionBehavior() {
+        return exceptionBehavior;
+    }
+
+    public void setExceptionBehavior(ExceptionBehavior exceptionBehavior) {
+        if (exceptionBehavior != null) this.exceptionBehavior = exceptionBehavior;
     }
 
     /* 创建一个默认策略实例对象 */

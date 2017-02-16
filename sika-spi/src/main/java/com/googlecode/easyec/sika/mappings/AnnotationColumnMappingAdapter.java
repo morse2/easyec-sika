@@ -46,7 +46,9 @@ final class AnnotationColumnMappingAdapter {
         try {
             logger.trace("Prepare to populate data of row: [" + (rowIndex + 1) + "].");
 
-            _fill(rowIndex, bw, dataList, strategy);
+            MappingsException ex = new MappingsException();
+            _fill(rowIndex, bw, dataList, strategy, ex);
+            if (ex.hasExceptions()) throw ex;
         } finally {
             logger.trace("Finish populating data of row: [" + (rowIndex + 1) + "].");
         }
@@ -70,7 +72,7 @@ final class AnnotationColumnMappingAdapter {
     }
 
     @SuppressWarnings({ "unchecked" })
-    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
+    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy, MappingsException allEx)
         throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
         for (PropertyDescriptor pd : pds) {
@@ -94,7 +96,7 @@ final class AnnotationColumnMappingAdapter {
                 }
 
                 BeanWrapper bwModel = new BeanWrapperImpl(type);
-                _fill(rowIndex, bwModel, dataList, strategy);
+                _fill(rowIndex, bwModel, dataList, strategy, allEx);
 
                 try {
                     // 获取封装的对象实例
@@ -127,7 +129,13 @@ final class AnnotationColumnMappingAdapter {
                                 ex.setSource(((AbstractColumnValidator) cv).getSource());
                             }
 
-                            throw ex;
+                            switch (strategy.getExceptionBehavior()) {
+                                case ThrowAll:
+                                    allEx.add(ex);
+                                    break;
+                                default:
+                                    throw ex;
+                            }
                         }
                     }
 
@@ -235,7 +243,13 @@ final class AnnotationColumnMappingAdapter {
                                 ex.setSource(((AbstractColumnValidator) cv).getSource());
                             }
 
-                            throw ex;
+                            switch (strategy.getExceptionBehavior()) {
+                                case ThrowAll:
+                                    allEx.add(ex);
+                                    break;
+                                default:
+                                    throw ex;
+                            }
                         }
                     }
 
