@@ -75,6 +75,7 @@ final class AnnotationColumnMappingAdapter {
     private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy, MappingsException allEx)
         throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
+        out:
         for (PropertyDescriptor pd : pds) {
             String propertyName = pd.getName();
             if (!bw.isReadableProperty(propertyName)) {
@@ -222,7 +223,7 @@ final class AnnotationColumnMappingAdapter {
                     logger.debug("The new value after converting is: [{}].", newVal);
 
                     Class<? extends ColumnValidator>[] validators = cm.validators();
-                    vfor: for (Class<? extends ColumnValidator> validator : validators) {
+                    for (Class<? extends ColumnValidator> validator : validators) {
                         ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
                         if (!cv.accept(newVal)) {
                             StringBuffer sb = new StringBuffer();
@@ -246,7 +247,7 @@ final class AnnotationColumnMappingAdapter {
                             switch (strategy.getExceptionBehavior()) {
                                 case ThrowAll:
                                     allEx.add(ex);
-                                    break vfor;
+                                    continue out;
                                 default:
                                     throw ex;
                             }
