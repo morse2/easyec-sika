@@ -222,7 +222,7 @@ final class AnnotationColumnMappingAdapter {
                     logger.debug("The new value after converting is: [{}].", newVal);
 
                     Class<? extends ColumnValidator>[] validators = cm.validators();
-                    for (Class<? extends ColumnValidator> validator : validators) {
+                    vfor: for (Class<? extends ColumnValidator> validator : validators) {
                         ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
                         if (!cv.accept(newVal)) {
                             StringBuffer sb = new StringBuffer();
@@ -246,7 +246,7 @@ final class AnnotationColumnMappingAdapter {
                             switch (strategy.getExceptionBehavior()) {
                                 case ThrowAll:
                                     allEx.add(ex);
-                                    break;
+                                    break vfor;
                                 default:
                                     throw ex;
                             }
