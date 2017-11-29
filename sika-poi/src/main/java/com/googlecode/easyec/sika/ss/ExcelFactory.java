@@ -231,9 +231,9 @@ public final class ExcelFactory {
                                             cell.setCellFormula(
                                                 ((Formula) formulaObj).encode()
                                             );
-                                        }
 
-                                        break;
+                                            break;
+                                        }
                                     default:
                                         if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
                                             CellStyle cs = wb.createCellStyle();

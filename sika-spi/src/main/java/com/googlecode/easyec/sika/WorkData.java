@@ -122,7 +122,10 @@ public abstract class WorkData implements Serializable {
         this.workDataType = workDataType;
     }
 
-    private void guessWorkDataType() {
+    /**
+     * 猜测工作本数据的类型
+     */
+    protected void guessWorkDataType() {
         if (null == value) {
             setWorkDataType(WorkDataType.NULL);
         } else if (value instanceof String) {
