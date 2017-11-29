@@ -7,6 +7,7 @@ import com.googlecode.easyec.sika.ss.data.ExcelData;
 import com.googlecode.easyec.sika.ss.event.ExcelSheetEventCtrl;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
+import com.googlecode.easyec.sika.ss.formulas.Formula;
 import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -224,6 +225,15 @@ public final class ExcelFactory {
                                     case DATE:
                                         cell.setCellValue(((Date) workData.getValue()));
                                         break;
+                                    case FORMULA:
+                                        Object formulaObj = workData.getValue();
+                                        if (formulaObj instanceof Formula) {
+                                            cell.setCellFormula(
+                                                ((Formula) formulaObj).encode()
+                                            );
+                                        }
+
+                                        break;
                                     default:
                                         if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
                                             CellStyle cs = wb.createCellStyle();
@@ -231,7 +241,11 @@ public final class ExcelFactory {
                                             cell.setCellStyle(cs);
                                         }
 
-                                        cell.setCellValue(helper.createRichTextString(workData.getValue(new Object2StringConverter())));
+                                        cell.setCellValue(
+                                            helper.createRichTextString(
+                                                workData.getValue(new Object2StringConverter())
+                                            )
+                                        );
                                 }
                             }
                         }

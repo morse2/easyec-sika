@@ -19,12 +19,16 @@ import java.util.Date;
  */
 public abstract class WorkData implements Serializable {
 
-    private static final long serialVersionUID = 5343405344896151733L;
+    private static final long serialVersionUID = 8946528323476044107L;
 
     /**
      * 工作数据类型的枚举类
      */
     public enum WorkDataType {
+        /**
+         * 指出工作数据的值类型为公式
+         */
+        FORMULA,
         /**
          * 指出工作数据的值类型为数字
          */
@@ -47,7 +51,7 @@ public abstract class WorkData implements Serializable {
         UNKNOWN
     }
 
-    private Object       value;
+    private Object value;
     private WorkDataType workDataType;
 
     /**

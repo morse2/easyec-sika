@@ -2,6 +2,7 @@ package com.googlecode.easyec;
 
 import com.googlecode.easyec.sika.WorkbookReader;
 import com.googlecode.easyec.sika.WorkingException;
+import com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory;
 import com.googlecode.easyec.sika.ss.ExcelFactory;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -17,6 +18,8 @@ public class ExcelTestCase {
 
     @Test
     public void readExcel() throws IOException, WorkingException {
+        System.out.println(ColumnEvaluatorFactory.calculateColumnIndex("AA"));
+
         UserImportHandler handler = new UserImportHandler();
         WorkbookReader reader = new WorkbookReader();
         reader.add(handler);
