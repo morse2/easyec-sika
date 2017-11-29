@@ -315,6 +315,15 @@ public final class ExcelFactory {
                                 case DATE:
                                     cell.setCellValue(((Date) workData.getValue()));
                                     break;
+                                case FORMULA:
+                                    Object formulaObj = workData.getValue();
+                                    if (formulaObj instanceof Formula) {
+                                        cell.setCellFormula(
+                                            ((Formula) formulaObj).encode()
+                                        );
+
+                                        break;
+                                    }
                                 default:
                                     if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
                                         CellStyle cs = cell.getCellStyle();
