@@ -38,6 +38,9 @@ public abstract class WorkbookStrategy {
 
     private ExceptionBehavior exceptionBehavior = ThrowOne;
 
+    // ----- 指出是否需要拷贝行的样式
+    private boolean copyRowStyleOnWrite = true;
+
     /**
      * 异常抛出行为的枚举类
      */
@@ -173,6 +176,19 @@ public abstract class WorkbookStrategy {
 
     public void setExceptionBehavior(ExceptionBehavior exceptionBehavior) {
         if (exceptionBehavior != null) this.exceptionBehavior = exceptionBehavior;
+    }
+
+    public boolean isCopyRowStyleOnWrite() {
+        return copyRowStyleOnWrite;
+    }
+
+    /**
+     * 设置在写出工作本数据时候是否需要拷贝第一行的样式
+     *
+     * @param copyRowStyleOnWrite bool值
+     */
+    public void setCopyRowStyleOnWrite(boolean copyRowStyleOnWrite) {
+        this.copyRowStyleOnWrite = copyRowStyleOnWrite;
     }
 
     /* 创建一个默认策略实例对象 */

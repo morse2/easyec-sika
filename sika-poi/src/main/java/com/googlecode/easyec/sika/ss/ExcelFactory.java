@@ -281,10 +281,11 @@ public final class ExcelFactory {
                 }
 
                 for (int k = 0; k < list.size(); k++, j++) {
-                    Row row = sheet.createRow(j);
+                    Row row = sheet.getRow(j);
+                    if (row == null) row = sheet.createRow(j);
 
                     // 设置行的样式
-                    if (null != firstRow) {
+                    if (null != firstRow && strategy.isCopyRowStyleOnWrite()) {
                         try {
                             CellStyle rowStyle = firstRow.getRowStyle();
                             if (null != rowStyle) row.setRowStyle(rowStyle);
@@ -297,42 +298,47 @@ public final class ExcelFactory {
 
                     try {
                         dataList = callback.populate(k, list.get(k));
+                        if (dataList == null) continue;
 
                         for (int m = 0; m < dataList.size(); m++) {
-                            Cell cell = row.createCell(m);
+                            Cell cell = row.getCell(m, Row.CREATE_NULL_AS_BLANK);
 
-                            if (!firstRowCells.isEmpty() && m < firstRowCells.size()) {
-                                // 设置单元格样式
-                                CellStyle cellStyle = firstRowCells.get(m).getCellStyle();
-                                if (null != cellStyle) cell.setCellStyle(cellStyle);
+                            if (strategy.isCopyRowStyleOnWrite()) {
+                                if (!firstRowCells.isEmpty() && m < firstRowCells.size()) {
+                                    // 设置单元格样式
+                                    CellStyle cellStyle = firstRowCells.get(m).getCellStyle();
+                                    if (null != cellStyle) cell.setCellStyle(cellStyle);
+                                }
                             }
 
                             WorkData workData = dataList.get(m);
-                            switch (workData.getWorkDataType()) {
-                                case NUMBER:
-                                    cell.setCellValue(((Number) workData.getValue()).doubleValue());
-                                    break;
-                                case DATE:
-                                    cell.setCellValue(((Date) workData.getValue()));
-                                    break;
-                                case FORMULA:
-                                    Object formulaObj = workData.getValue();
-                                    if (formulaObj instanceof Formula) {
-                                        cell.setCellFormula(
-                                            ((Formula) formulaObj).encode()
-                                        );
-
+                            if (workData != null) {
+                                switch (workData.getWorkDataType()) {
+                                    case NUMBER:
+                                        cell.setCellValue(((Number) workData.getValue()).doubleValue());
                                         break;
-                                    }
-                                default:
-                                    if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
-                                        CellStyle cs = cell.getCellStyle();
-                                        if (null == cs) cs = wb.createCellStyle();
-                                        cs.setWrapText(true);
-                                        cell.setCellStyle(cs);
-                                    }
+                                    case DATE:
+                                        cell.setCellValue(((Date) workData.getValue()));
+                                        break;
+                                    case FORMULA:
+                                        Object formulaObj = workData.getValue();
+                                        if (formulaObj instanceof Formula) {
+                                            cell.setCellFormula(
+                                                ((Formula) formulaObj).encode()
+                                            );
 
-                                    cell.setCellValue(helper.createRichTextString(workData.getValue(new Object2StringConverter())));
+                                            break;
+                                        }
+                                    default:
+                                        if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
+                                            CellStyle cs = cell.getCellStyle();
+                                            if (null == cs) cs = wb.createCellStyle();
+                                            cs.setWrapText(true);
+                                            cell.setCellStyle(cs);
+                                        }
+
+                                        cell.setCellValue(helper.createRichTextString(workData.getValue(new Object2StringConverter())));
+                                }
                             }
                         }
                     } catch (WorkingException e) {

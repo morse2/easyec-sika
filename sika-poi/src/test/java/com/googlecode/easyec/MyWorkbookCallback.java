@@ -6,8 +6,11 @@ import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.data.DefaultWorkData;
 import com.googlecode.easyec.sika.ss.ExcelRowCallback;
 import com.googlecode.easyec.sika.WorkPage;
+import com.googlecode.easyec.sika.ss.data.ExcelData;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
+import com.googlecode.easyec.sika.ss.formulas.impl.SimpleStringFormula;
+import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.ComparisonOperator;
 import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
@@ -37,7 +40,11 @@ public class MyWorkbookCallback extends ExcelRowCallback<User> {
 
     @Override
     public void doInit() {
-        setInitializingSheetListener(
+        WorkbookStrategy strategy = WorkbookStrategy.DEFAULT;
+        strategy.setCopyRowStyleOnWrite(false);
+        setStrategy(strategy);
+
+        /*setInitializingSheetListener(
             new InitializingSheetListener() {
 
                 public void doInit(InitializingSheetEvent event) {
@@ -55,15 +62,21 @@ public class MyWorkbookCallback extends ExcelRowCallback<User> {
                     );
                 }
             }
-        );
+        );*/
     }
 
     public List<WorkData> populate(int index, User o) throws WorkingException {
         List<WorkData> list = new ArrayList<WorkData>();
 
+        if ((index + 1) == 1) {
+            return null;
+        }
+
+        list.add(null);
         list.add(new DefaultWorkData(o.getName()));
         list.add(new DefaultWorkData(o.getAge()));
         list.add(new DefaultWorkData(o.getGender()));
+        list.add(new ExcelData(new SimpleStringFormula("B2/SUM(B:B)"), 0, 0));
 
         return list;
     }
