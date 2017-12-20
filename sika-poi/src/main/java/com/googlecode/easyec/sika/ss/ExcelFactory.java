@@ -28,6 +28,7 @@ import static com.googlecode.easyec.sika.DocType.EXCEL07;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.poi.ss.usermodel.Cell.*;
 import static org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted;
+import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.CREATE_NULL_AS_BLANK;
 
 /**
  * Excel文档处理工厂类。
@@ -211,12 +212,13 @@ public final class ExcelFactory {
                         WorkData[] dataList = headerList.get(m);
 
                         if (ArrayUtils.isNotEmpty(dataList)) {
-                            Row row = sheet.createRow(m);
+                            Row row = sheet.getRow(m);
+                            if (row == null) row = sheet.createRow(m);
 
                             for (int n = 0; n < dataList.length; n++) {
                                 WorkData workData = dataList[n];
 
-                                Cell cell = row.createCell(n);
+                                Cell cell = row.getCell(n, CREATE_NULL_AS_BLANK);
 
                                 switch (workData.getWorkDataType()) {
                                     case NUMBER:
@@ -276,7 +278,7 @@ public final class ExcelFactory {
                     }
 
                     for (int k = 0; k < lastCellNum; k++) {
-                        firstRowCells.add(firstRow.getCell(k, Row.CREATE_NULL_AS_BLANK));
+                        firstRowCells.add(firstRow.getCell(k, CREATE_NULL_AS_BLANK));
                     }
                 }
 
@@ -301,7 +303,7 @@ public final class ExcelFactory {
                         if (dataList == null) continue;
 
                         for (int m = 0; m < dataList.size(); m++) {
-                            Cell cell = row.getCell(m, Row.CREATE_NULL_AS_BLANK);
+                            Cell cell = row.getCell(m, CREATE_NULL_AS_BLANK);
 
                             if (strategy.isCopyRowStyleOnWrite()) {
                                 if (!firstRowCells.isEmpty() && m < firstRowCells.size()) {
