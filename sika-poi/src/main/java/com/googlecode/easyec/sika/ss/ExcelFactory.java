@@ -220,34 +220,36 @@ public final class ExcelFactory {
 
                                 Cell cell = row.getCell(n, CREATE_NULL_AS_BLANK);
 
-                                switch (workData.getWorkDataType()) {
-                                    case NUMBER:
-                                        cell.setCellValue(((Number) workData.getValue()).doubleValue());
-                                        break;
-                                    case DATE:
-                                        cell.setCellValue(((Date) workData.getValue()));
-                                        break;
-                                    case FORMULA:
-                                        Object formulaObj = workData.getValue();
-                                        if (formulaObj instanceof Formula) {
-                                            cell.setCellFormula(
-                                                ((Formula) formulaObj).encode()
-                                            );
-
+                                if (workData != null) {
+                                    switch (workData.getWorkDataType()) {
+                                        case NUMBER:
+                                            cell.setCellValue(((Number) workData.getValue()).doubleValue());
                                             break;
-                                        }
-                                    default:
-                                        if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
-                                            CellStyle cs = wb.createCellStyle();
-                                            cs.setWrapText(true);
-                                            cell.setCellStyle(cs);
-                                        }
+                                        case DATE:
+                                            cell.setCellValue(((Date) workData.getValue()));
+                                            break;
+                                        case FORMULA:
+                                            Object formulaObj = workData.getValue();
+                                            if (formulaObj instanceof Formula) {
+                                                cell.setCellFormula(
+                                                    ((Formula) formulaObj).encode()
+                                                );
 
-                                        cell.setCellValue(
-                                            helper.createRichTextString(
-                                                workData.getValue(new Object2StringConverter())
-                                            )
-                                        );
+                                                break;
+                                            }
+                                        default:
+                                            if ((workData instanceof ExcelData) && ((ExcelData) workData).isWrapText()) {
+                                                CellStyle cs = wb.createCellStyle();
+                                                cs.setWrapText(true);
+                                                cell.setCellStyle(cs);
+                                            }
+
+                                            cell.setCellValue(
+                                                helper.createRichTextString(
+                                                    workData.getValue(new Object2StringConverter())
+                                                )
+                                            );
+                                    }
                                 }
                             }
                         }
