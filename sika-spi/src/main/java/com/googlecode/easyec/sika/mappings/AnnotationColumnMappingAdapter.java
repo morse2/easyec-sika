@@ -42,7 +42,7 @@ final class AnnotationColumnMappingAdapter {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationColumnMappingAdapter.class);
 
     static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
-        throws WorkingException {
+    throws WorkingException {
         try {
             logger.trace("Prepare to populate data of row: [" + (rowIndex + 1) + "].");
 
@@ -73,7 +73,7 @@ final class AnnotationColumnMappingAdapter {
 
     @SuppressWarnings({ "unchecked" })
     private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy, MappingsException allEx)
-        throws WorkingException {
+    throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
         out:
         for (PropertyDescriptor pd : pds) {
@@ -186,22 +186,6 @@ final class AnnotationColumnMappingAdapter {
                 }
 
                 try {
-                    if (colIndex >= dataList.size()) {
-                        if (logger.isTraceEnabled()) {
-                            logger.trace(
-                                new StringBuffer()
-                                    .append("There is expect colIndex: [")
-                                    .append(colIndex)
-                                    .append("], actual colIndex: [")
-                                    .append(dataList.size())
-                                    .append("].")
-                                    .toString()
-                            );
-                        }
-
-                        continue;
-                    }
-
                     // 判断当前取值索引号是否在已配置的策略范围内
                     if (!strategy.isColumnConfigured(colIndex)) {
                         if (logger.isTraceEnabled()) {
@@ -217,7 +201,13 @@ final class AnnotationColumnMappingAdapter {
                         continue;
                     }
 
-                    Object val = dataList.get(colIndex).getValue();
+                    /*
+                     * 获取文档单元格中的数据，
+                     * 如果期望的列索引值大于
+                     * 单元格的列索引数量，则
+                     * 直接返回null
+                     */
+                    Object val = (colIndex < dataList.size()) ? dataList.get(colIndex).getValue() : null;
                     // 先执行convert动作，而后在对convert后的数据进行校验
                     Object newVal = ((ColumnConverter) BeanUtils.instantiateClass(cm.converter())).adorn(val);
                     logger.debug("The new value after converting is: [{}].", newVal);

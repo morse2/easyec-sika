@@ -146,7 +146,7 @@ public abstract class WorkbookStrategy {
 
         _init1(
             ArrayUtils.toPrimitive(
-                list.toArray(new Integer[list.size()])
+                list.toArray(new Integer[0])
             )
         );
     }

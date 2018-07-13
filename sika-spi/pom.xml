@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.googlecode.easyec</groupId>
         <artifactId>sika</artifactId>
-        <version>0.3.0.2-SNAPSHOT</version>
+        <version>0.3.0.3-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
