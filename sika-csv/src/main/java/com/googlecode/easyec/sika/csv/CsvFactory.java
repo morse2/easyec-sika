@@ -96,7 +96,8 @@ public final class CsvFactory {
             w,
             schema.getSeparator(),
             schema.getQuotechar(),
-            schema.getEscape()
+            schema.getEscape(),
+            schema.getLineEnd()
         );
 
         // do write header of csv
