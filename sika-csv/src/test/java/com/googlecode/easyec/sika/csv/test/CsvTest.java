@@ -52,9 +52,9 @@ public class CsvTest {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
         IOUtils.write(w.toString(), bos, "gb18030");
 
-        FileOutputStream out = new FileOutputStream("D:/b.csv");
+        /*FileOutputStream out = new FileOutputStream("D:/b.csv");
         out.write(bos.toByteArray());
         out.flush();
-        out.close();
+        out.close();*/
     }
 }

@@ -65,12 +65,12 @@ public class MyWorkbookTestCase {
             }
         }));
 
-        InputStream in = new ClassPathResource("Book1.xls").getInputStream();
+        /*InputStream in = new ClassPathResource("Book1.xls").getInputStream();
         OutputStream out = new FileOutputStream("D:/Book2.xls");
 
         ExcelFactory.getInstance().write(in, out, w);
 
         out.flush();
-        out.close();
+        out.close();*/
     }
 }
