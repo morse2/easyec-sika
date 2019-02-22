@@ -1,15 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.googlecode.easyec</groupId>
         <artifactId>sika</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.3.0.3-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sika-poi</artifactId>
     <packaging>jar</packaging>
     <name>sika-poi</name>
-    <url>&gt;http://code.google.com/p/easyec</url>
+    <url>>http://code.google.com/p/easyec</url>
     <description>
         The sika-poi that is for Apache POI document extension.
     </description>
@@ -36,7 +37,7 @@
         <dependency>
             <groupId>com.googlecode.easyec</groupId>
             <artifactId>sika-spi</artifactId>
-            <version>0.3.1-SNAPSHOT</version>
+            <version>0.3.0.3-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
