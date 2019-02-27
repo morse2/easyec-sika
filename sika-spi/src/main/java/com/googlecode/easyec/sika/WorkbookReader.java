@@ -25,7 +25,7 @@ public class WorkbookReader implements Workbook<WorkbookHandler> {
     private WorkbookHandlerChangeListener workbookHandlerChangeListener;
     private WorkbookPostHandleListener    workbookPostHandleListener;
 
-    private List<WorkbookHandler> workbookHandlerList = synchronizedList(new ArrayList<WorkbookHandler>());
+    private List<WorkbookHandler> workbookHandlerList = synchronizedList(new ArrayList<>());
 
     /**
      * 向当前的工作本设置一个事件监听器。

@@ -13,11 +13,11 @@ import static java.util.Collections.unmodifiableList;
  */
 public class WorkbookHeader implements Serializable {
 
-    private static final long serialVersionUID = -5554305204194122233L;
-    List<WorkData[]> headerList = new LinkedList<WorkData[]>();
+    private static final long serialVersionUID = 8822858804944758071L;
+    private List<WorkData[]> headerList = new LinkedList<WorkData[]>();
     private boolean hasHeader;
-    private int     headerCount;
-    private int     rawHeaderCount;
+    private int headerCount;
+    private int rawHeaderCount;
 
     public WorkbookHeader(List<WorkData[]> headerList) {
         if (headerList == null) {
@@ -33,14 +33,14 @@ public class WorkbookHeader implements Serializable {
 
     public WorkbookHeader(int headerCount) {
         if (headerCount > 0) {
+            this.hasHeader = true;
             this.headerCount = headerCount;
-            this.hasHeader = this.headerCount > 0;
             this.rawHeaderCount = this.headerCount;
         }
     }
 
     public void addHeader(List<WorkData> data) {
-        addHeader(data.toArray(new WorkData[data.size()]));
+        addHeader(data.toArray(new WorkData[0]));
     }
 
     public void addHeader(WorkData[] data) {

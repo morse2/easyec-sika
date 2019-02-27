@@ -12,7 +12,7 @@ import static java.util.Collections.synchronizedList;
  */
 public class WorkbookWriter implements Workbook<WorkbookCallback<?>> {
 
-    private List<WorkbookCallback<?>> workbookCallbackList = synchronizedList(new ArrayList<WorkbookCallback<?>>());
+    private List<WorkbookCallback<?>> workbookCallbackList = synchronizedList(new ArrayList<>());
 
     /**
      * 为此工作本添加一个工作页面。
