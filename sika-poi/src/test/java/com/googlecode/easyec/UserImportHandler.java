@@ -15,7 +15,7 @@ public class UserImportHandler extends AnnotationWorkbookRowHandler<User> {
     @Override
     public void doInit() throws WorkingException {
         setBlankRowListener(WorkbookBlankRowListener.DEFAULT);
-        setStrategy(WorkbookStrategy.create(new String[] { "B" }));
+//        setStrategy(WorkbookStrategy.create(this, new String[] { "B" }));
     }
 
     @Override

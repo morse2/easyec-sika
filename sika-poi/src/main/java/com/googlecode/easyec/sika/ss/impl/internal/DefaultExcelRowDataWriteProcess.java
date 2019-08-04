@@ -1,8 +1,8 @@
-package com.googlecode.easyec.sika.ss.internal;
+package com.googlecode.easyec.sika.ss.impl.internal;
 
 import com.googlecode.easyec.sika.*;
 import com.googlecode.easyec.sika.converters.Object2StringConverter;
-import com.googlecode.easyec.sika.ss.AbstractExcelProcess;
+import com.googlecode.easyec.sika.mappings.*;
 import com.googlecode.easyec.sika.ss.ExcelCtrl;
 import com.googlecode.easyec.sika.ss.ExcelWriteProcess;
 import com.googlecode.easyec.sika.ss.data.ExcelData;
@@ -10,17 +10,19 @@ import com.googlecode.easyec.sika.ss.event.ExcelSheetEventCtrl;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetEvent;
 import com.googlecode.easyec.sika.ss.event.InitializingSheetListener;
 import com.googlecode.easyec.sika.ss.formulas.Formula;
+import com.googlecode.easyec.sika.ss.impl.AbstractExcelProcess;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.util.CollectionUtils;
 
+import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.CREATE_NULL_AS_BLANK;
 
 public class DefaultExcelRowDataWriteProcess extends AbstractExcelProcess implements ExcelWriteProcess {
@@ -191,6 +193,17 @@ public class DefaultExcelRowDataWriteProcess extends AbstractExcelProcess implem
         }
 
         return out.toByteArray();
+    }
+
+    protected BeanMappingParamResolver createBeanMappingParamResolver() {
+        return new BeanMappingParamResolver(createAnnotationMappingResolverChain());
+    }
+
+    protected AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> createAnnotationMappingResolverChain() {
+        return new AnnotationMappingResolverChain<>(
+            new PutColumnMappingParamResolver(),
+            new ColumnMappingParamResolver()
+        );
     }
 
     protected int processHeader(Workbook wb, Sheet sheet, WorkbookHeader header) {

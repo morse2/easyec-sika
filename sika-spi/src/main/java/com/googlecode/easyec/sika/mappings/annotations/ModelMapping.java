@@ -5,7 +5,13 @@ import com.googlecode.easyec.sika.converters.ModelConverter;
 import com.googlecode.easyec.sika.converters.NoOpConverter;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * 模型映射器注解类。
@@ -29,8 +35,8 @@ import java.lang.annotation.*;
  * @author JunJie
  */
 @Documented
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RUNTIME)
+@Target({ ANNOTATION_TYPE, METHOD })
 public @interface ModelMapping {
 
     /**

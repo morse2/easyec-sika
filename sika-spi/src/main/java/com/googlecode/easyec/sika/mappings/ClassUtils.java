@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
  *
  * @author JunJie
  */
-final class ClassUtils {
+public final class ClassUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ClassUtils.class);
 
@@ -23,9 +23,8 @@ final class ClassUtils {
      * @param index 泛型类型的索引号
      * @return 具体的实现类
      * @throws com.googlecode.easyec.sika.WorkingException
-     *
      */
-    static Class resolveGenericType(Object o, int index) throws WorkingException {
+    public static Class resolveGenericType(Object o, int index) throws WorkingException {
         Type genType = o.getClass().getGenericSuperclass();
 
         while (genType instanceof Class) {

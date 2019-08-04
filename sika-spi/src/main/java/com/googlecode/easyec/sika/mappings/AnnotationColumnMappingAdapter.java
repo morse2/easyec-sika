@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import static com.googlecode.easyec.sika.Constants.INST_NOT_CONVERTER;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.calculateColIndex;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.getMaxColIndex;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * 数据列注解形式映射的适配器类。
@@ -41,25 +41,25 @@ final class AnnotationColumnMappingAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationColumnMappingAdapter.class);
 
-    static synchronized void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
-    throws WorkingException {
+    static void fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy)
+        throws WorkingException {
         try {
-            logger.trace("Prepare to populate data of row: [" + (rowIndex + 1) + "].");
+            logger.trace("Prepare to populate data of row: [{}].", (rowIndex + 1));
 
             MappingsException ex = new MappingsException();
             _fill(rowIndex, bw, dataList, strategy, ex);
             if (ex.hasExceptions()) throw ex;
         } finally {
-            logger.trace("Finish populating data of row: [" + (rowIndex + 1) + "].");
+            logger.trace("Finish populating data of row: [{}].", (rowIndex + 1));
         }
     }
 
-    static synchronized List<WorkData> refill(BeanWrapper bw, WorkbookStrategy strategy) throws WorkingException {
-        Map<Integer, WorkData> map = new TreeMap<Integer, WorkData>();
-        List<WorkData> list = new ArrayList<WorkData>();
+    static List<WorkData> refill(BeanWrapper bw, WorkbookStrategy strategy) throws WorkingException {
+        Map<Integer, WorkData> map = new TreeMap<>();
+        List<WorkData> list = new ArrayList<>();
 
         _refill(bw, map, strategy);
-        Integer[] keys = map.keySet().toArray(new Integer[map.size()]);
+        Integer[] keys = map.keySet().toArray(new Integer[0]);
         // get maximum key
         Integer maxKey = keys[keys.length - 1];
         for (int i = 0; i < maxKey; i++) {
@@ -71,16 +71,15 @@ final class AnnotationColumnMappingAdapter {
         return list;
     }
 
-    @SuppressWarnings({ "unchecked" })
     private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy, MappingsException allEx)
-    throws WorkingException {
+        throws WorkingException {
         PropertyDescriptor[] pds = bw.getPropertyDescriptors();
         out:
         for (PropertyDescriptor pd : pds) {
             String propertyName = pd.getName();
             if (!bw.isReadableProperty(propertyName)) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("Property [" + propertyName + "] has no any readable method.");
+                    logger.warn("Property [{}] has no any readable method.", propertyName);
                 }
 
                 continue;
@@ -155,7 +154,8 @@ final class AnnotationColumnMappingAdapter {
             if (m.isAnnotationPresent(ColumnMapping.class)) {
                 ColumnMapping cm = m.getAnnotation(ColumnMapping.class);
 
-                String col = cm.columnForRead();
+                // TODO: 2019-07-25  
+                String col = null;// cm.columnForRead();
                 if (isBlank(col)) col = cm.column();
                 logger.debug("Column [{}] will be read.", col);
 
@@ -320,7 +320,8 @@ final class AnnotationColumnMappingAdapter {
             if (m.isAnnotationPresent(ColumnMapping.class)) {
                 ColumnMapping cm = m.getAnnotation(ColumnMapping.class);
 
-                String col = cm.columnForWrite();
+                // TODO: 2019-07-25
+                String col = null;// cm.columnForWrite();
                 if (isBlank(col)) col = cm.column();
                 logger.debug("Column [{}] will be wrote.", col);
 

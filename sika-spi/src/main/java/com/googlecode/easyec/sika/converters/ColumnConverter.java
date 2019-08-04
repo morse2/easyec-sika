@@ -25,5 +25,6 @@ public interface ColumnConverter<T> {
      * @param original 原始值类型
      * @return 工作本值类型
      */
+    @Deprecated
     Object conceal(T original);
 }

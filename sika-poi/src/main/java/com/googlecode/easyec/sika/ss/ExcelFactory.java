@@ -3,8 +3,8 @@ package com.googlecode.easyec.sika.ss;
 import com.googlecode.easyec.sika.*;
 import com.googlecode.easyec.sika.event.WorkbookHandlerChangeListener;
 import com.googlecode.easyec.sika.event.WorkbookPostHandleListener;
-import com.googlecode.easyec.sika.ss.internal.DefaultExcelRowDataReadProcess;
-import com.googlecode.easyec.sika.ss.internal.DefaultExcelRowDataWriteProcess;
+import com.googlecode.easyec.sika.ss.impl.internal.DefaultExcelRowDataReadProcess;
+import com.googlecode.easyec.sika.ss.impl.internal.DefaultExcelRowDataWriteProcess;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
 import java.io.*;
 import java.util.stream.Stream;
 
-import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 /**
  * Excel文档处理工厂类。
@@ -52,32 +52,16 @@ public final class ExcelFactory {
         doRead(in, reader, new DefaultExcelRowDataReadProcess());
     }
 
-    public void read(InputStream in, WorkbookRowHandler... handlers) throws WorkingException {
-        read(in, (WorkbookHandlerChangeListener) null, null, handlers);
-    }
-
     public void read(InputStream in, ExcelReadProcess proc, WorkbookRowHandler... handlers) throws WorkingException {
         read(in, proc, null, null, handlers);
-    }
-
-    public void read(InputStream in, WorkbookHandlerChangeListener lsnr, WorkbookRowHandler... handlers) throws WorkingException {
-        read(in, lsnr, null, handlers);
     }
 
     public void read(InputStream in, ExcelReadProcess proc, WorkbookHandlerChangeListener lsnr, WorkbookRowHandler... handlers) throws WorkingException {
         read(in, proc, lsnr, null, handlers);
     }
 
-    public void read(InputStream in, WorkbookPostHandleListener lsnr, WorkbookRowHandler... handlers) throws WorkingException {
-        read(in, (WorkbookHandlerChangeListener) null, lsnr, handlers);
-    }
-
     public void read(InputStream in, ExcelReadProcess proc, WorkbookPostHandleListener lsnr, WorkbookRowHandler... handlers) throws WorkingException {
         read(in, proc, null, lsnr, handlers);
-    }
-
-    public void read(InputStream in, WorkbookHandlerChangeListener lsnr1, WorkbookPostHandleListener lsnr2, WorkbookRowHandler... handlers) throws WorkingException {
-        read(in, new DefaultExcelRowDataReadProcess(), lsnr1, lsnr2, handlers);
     }
 
     public void read(InputStream in, ExcelReadProcess proc, WorkbookHandlerChangeListener lsnr1, WorkbookPostHandleListener lsnr2, WorkbookRowHandler... handlers) throws WorkingException {
@@ -92,6 +76,22 @@ public final class ExcelFactory {
         reader.setWorkbookPostHandleListener(lsnr2);
 
         doRead(in, reader, proc);
+    }
+
+    public void readLines(InputStream in, WorkbookRowHandler... handlers) throws WorkingException {
+        readLines(in, null, null, handlers);
+    }
+
+    public void readLines(InputStream in, WorkbookHandlerChangeListener lsnr, WorkbookRowHandler... handlers) throws WorkingException {
+        readLines(in, lsnr, null, handlers);
+    }
+
+    public void readLines(InputStream in, WorkbookPostHandleListener lsnr, WorkbookRowHandler... handlers) throws WorkingException {
+        readLines(in, null, lsnr, handlers);
+    }
+
+    public void readLines(InputStream in, WorkbookHandlerChangeListener lsnr1, WorkbookPostHandleListener lsnr2, WorkbookRowHandler... handlers) throws WorkingException {
+        read(in, new DefaultExcelRowDataReadProcess(), lsnr1, lsnr2, handlers);
     }
 
     @Deprecated

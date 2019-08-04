@@ -10,7 +10,7 @@ import java.util.List;
 import static com.googlecode.easyec.sika.WorkData.WorkDataType.NULL;
 import static com.googlecode.easyec.sika.WorkData.WorkDataType.STRING;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.calculateColumnIndex;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * 默认空行监听器类。

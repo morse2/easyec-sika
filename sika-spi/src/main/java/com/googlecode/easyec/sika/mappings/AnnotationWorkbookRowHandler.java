@@ -4,10 +4,11 @@ import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkbookHeader;
 import com.googlecode.easyec.sika.WorkbookRowHandler;
 import com.googlecode.easyec.sika.WorkingException;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.util.Assert;
 
 import java.util.List;
-
-import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.mergeBean;
 
 /**
  * 工作本行数据的注解映射方式的处理器实现类。
@@ -16,32 +17,51 @@ import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.mergeBe
  */
 public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler {
 
-    private Class genericClass;
+    private BeanMappingParamResolver beanMappingParamResolver;
 
     protected AnnotationWorkbookRowHandler() {
         super();
-        _init();
     }
 
     protected AnnotationWorkbookRowHandler(WorkbookHeader header) {
         super(header);
-        _init();
     }
 
-    private void _init() {
-        try {
-            genericClass = ClassUtils.resolveGenericType(this, 0);
-        } catch (WorkingException e) {
-            logger.error(e.getMessage(), e);
+    public BeanMappingParamResolver getBeanMappingParamResolver() {
+        return beanMappingParamResolver;
+    }
 
-            throw new IllegalArgumentException("Undefined generic class.");
-        }
+    public void setBeanMappingParamResolver(BeanMappingParamResolver beanMappingParamResolver) {
+        this.beanMappingParamResolver = beanMappingParamResolver;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public boolean populate(int index, List<WorkData> list) throws WorkingException {
-        return processObject(index, (T) mergeBean(index, list, getStrategy(), genericClass));
+    public boolean populate(int index, List<WorkData> data) throws WorkingException {
+        Assert.notNull(getBeanMappingParamResolver(), "BeanMappingParamResolver cannot be null.");
+
+        T ret;
+
+        try {
+            logger.trace("Prepare to perform data of row: [{}].", (index + 1));
+
+            Class<?> cls = getStrategy().getGenericType(0);
+            BeanWrapper bw = new BeanWrapperImpl(cls);
+            MappingsException ex = new MappingsException();
+            getBeanMappingParamResolver().perform(
+                index, getStrategy(),
+                new BeanAnnotationMappingParam(bw, data, ex)
+            );
+
+            if (ex.hasExceptions()) throw ex;
+
+            //noinspection unchecked
+            ret = (T) bw.getWrappedInstance();
+        } finally {
+            logger.trace("Finish perform data of row: [{}].", (index + 1));
+        }
+
+        // process resolved object.
+        return processObject(index, ret);
     }
 
     /**
@@ -52,7 +72,7 @@ public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler
      * @param index 行号索引
      * @param o     泛型对象
      * @return 标识是否处理余下的行数据
-     * @throws WorkingException
+     * @throws WorkingException 工作本解析的异常
      */
     abstract public boolean processObject(int index, T o) throws WorkingException;
 }

@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * 数字到字符串类型的列数据转换器类。

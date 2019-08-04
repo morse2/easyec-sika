@@ -117,7 +117,7 @@ public final class CsvFactory {
 
                 WorkbookStrategy strategy = callback.getStrategy();
                 if (strategy == null) {
-                    strategy = WorkbookStrategy.DEFAULT;
+                    strategy = WorkbookStrategy.create(callback);
 
                     callback.setStrategy(strategy);
                 }
@@ -259,7 +259,7 @@ public final class CsvFactory {
             // 获取策略对象
             WorkbookStrategy strategy = handler.getStrategy();
             if (strategy == null) {
-                strategy = WorkbookStrategy.DEFAULT;
+                strategy = WorkbookStrategy.create(handler);
                 handler.setStrategy(strategy);
             }
 

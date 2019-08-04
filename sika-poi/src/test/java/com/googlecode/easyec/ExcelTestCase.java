@@ -18,7 +18,7 @@ public class ExcelTestCase {
 
     @Test
     public void readExcel() throws IOException, WorkingException {
-        /*System.out.println(ColumnEvaluatorFactory.calculateColumnIndex("AA"));
+        System.out.println(ColumnEvaluatorFactory.calculateColumnIndex("AA"));
 
         UserImportHandler handler = new UserImportHandler();
         WorkbookReader reader = new WorkbookReader();
@@ -28,6 +28,6 @@ public class ExcelTestCase {
         ExcelFactory.getInstance().read(in, reader);
 
         List<User> users = handler.getUsers();
-        System.out.println(users.size());*/
+        System.out.println(users.size());
     }
 }

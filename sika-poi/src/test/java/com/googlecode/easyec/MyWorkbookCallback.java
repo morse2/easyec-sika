@@ -40,7 +40,7 @@ public class MyWorkbookCallback extends ExcelRowCallback<User> {
 
     @Override
     public void doInit() {
-        WorkbookStrategy strategy = WorkbookStrategy.DEFAULT;
+        WorkbookStrategy strategy = WorkbookStrategy.create(this);
         strategy.setCopyRowStyleOnWrite(false);
         setStrategy(strategy);
 

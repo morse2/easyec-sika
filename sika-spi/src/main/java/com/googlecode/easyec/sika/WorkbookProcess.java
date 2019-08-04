@@ -1,6 +1,6 @@
 package com.googlecode.easyec.sika;
 
-import static com.googlecode.easyec.sika.support.WorkbookStrategy.DEFAULT;
+import static com.googlecode.easyec.sika.support.WorkbookStrategy.create;
 
 public interface WorkbookProcess {
 
@@ -9,7 +9,7 @@ public interface WorkbookProcess {
 
         // 设置文档策略对象
         if (aware.getStrategy() == null) {
-            aware.setStrategy(DEFAULT);
+            aware.setStrategy(create(aware));
         }
     }
 }

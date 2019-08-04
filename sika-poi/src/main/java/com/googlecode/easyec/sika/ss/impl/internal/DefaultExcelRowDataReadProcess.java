@@ -1,98 +1,43 @@
-package com.googlecode.easyec.sika.ss.internal;
+package com.googlecode.easyec.sika.ss.impl.internal;
 
 import com.googlecode.easyec.sika.*;
-import com.googlecode.easyec.sika.event.*;
-import com.googlecode.easyec.sika.ss.AbstractExcelProcess;
-import com.googlecode.easyec.sika.ss.ExcelCtrl;
-import com.googlecode.easyec.sika.ss.ExcelReadProcess;
+import com.googlecode.easyec.sika.event.RowEvent;
+import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
+import com.googlecode.easyec.sika.mappings.*;
 import com.googlecode.easyec.sika.ss.data.ExcelData;
-import org.apache.poi.ss.usermodel.Workbook;
+import com.googlecode.easyec.sika.ss.impl.AbstractExcelReadProcess;
 import org.apache.poi.ss.usermodel.*;
 
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted;
 
-public class DefaultExcelRowDataReadProcess extends AbstractExcelProcess implements ExcelReadProcess {
+public class DefaultExcelRowDataReadProcess extends AbstractExcelReadProcess {
 
     @Override
-    public void read(Workbook wb, WorkbookReader reader) throws WorkingException {
-        // create a formula evaluator
-        FormulaEvaluator fe = wb.getCreationHelper().createFormulaEvaluator();
-
-        int lastSheetNum = wb.getNumberOfSheets();
-        for (int i = 0; i < lastSheetNum; i++) {
-            WorkbookHandler handler;
-
-            /*
-             * 为每个sheet取相应索引的Handler。
-             * 但是当Handler的可以用数量少于sheet数量，
-             * 那么就跳出此sheet及后面的sheet的处理。
-             */
-            try {
-                handler = reader.get(i);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-
-                break;
-            }
-
-            if (!(handler instanceof WorkbookRowHandler)) {
-                logger.warn("WorkbookHandler must be instanceof WorkbookRowHandler. Actual type is: [{}]", handler);
-
-                continue;
-            }
-
-            try {
-                Sheet sheet = wb.getSheetAt(i);
-
-                WorkPage workPage = new WorkPage(i, sheet.getSheetName());
-
-                if (i > 0) {
-                    WorkbookHandlerChangeListener workbookHandlerChangeListener = reader.getWorkbookHandlerChangeListener();
-                    if (workbookHandlerChangeListener != null) {
-                        if (!workbookHandlerChangeListener.accept(new WorkbookHandleEvent(workPage)))
-                            break;
-                    }
-                }
-
-                /*
-                 * 如果处理器对象类型是ExcelCtrl，
-                 * 则设置工作页对象实例
-                 */
-                if (handler instanceof ExcelCtrl) {
-                    ((ExcelCtrl) handler).setWorkPage(workPage);
-                }
-
-                // do init method
-                doInit(wb, handler);
-
-                // process per row data
-                processPerRowDataOfSheet((WorkbookRowHandler) handler, sheet, fe);
-
-                // do finish
-                handler.doFinish();
-
-                // post event listener
-                WorkbookPostHandleListener postHandleListener = reader.getWorkbookPostHandleListener();
-                if (postHandleListener != null) {
-                    postHandleListener.postProcess(new WorkbookHandleEvent(workPage));
-                }
-            } finally {
-                // do finally
-                handler.doFinally();
-            }
-        }
+    protected boolean accept(int sheetPos, WorkbookHandler handler) {
+        return handler instanceof WorkbookRowHandler;
     }
 
-    protected void processPerRowDataOfSheet(WorkbookRowHandler handler, Sheet sheet, FormulaEvaluator fe) {
+    @Override
+    @SuppressWarnings("unchecked")
+    protected void processPerRowDataOfSheet(WorkbookHandler handler, Sheet sheet, FormulaEvaluator fe) {
         WorkbookHeader head = handler.getHeader();
         int headCount = head.getHeaderCount();
         int lastRowNum = getRowNum(sheet);
+
+        if (handler instanceof AnnotationWorkbookRowHandler) {
+            AnnotationWorkbookRowHandler anHandler = (AnnotationWorkbookRowHandler) handler;
+            BeanMappingParamResolver resolver = anHandler.getBeanMappingParamResolver();
+            if (resolver == null) {
+                anHandler.setBeanMappingParamResolver(createBeanMappingParamResolver());
+            }
+        }
 
         ConcurrentMap<Integer, List<WorkData>> dataMap = new ConcurrentHashMap<>(1);
         for (int j = 0; j < lastRowNum; j++) {
@@ -118,10 +63,9 @@ public class DefaultExcelRowDataReadProcess extends AbstractExcelProcess impleme
 
             try {
                 List<WorkData> rowData = getRowData(row, fe);
-                WorkbookBlankRowListener blankRowListeners = handler.getBlankRowListeners();
+                WorkbookBlankRowListener blankRowListeners = ((WorkbookRowHandler) handler).getBlankRowListeners();
                 if (blankRowListeners != null) {
-                    boolean b = blankRowListeners.accept(new RowEvent(rowData, j + 1));
-                    if (!b) break;
+                    if (!blankRowListeners.accept(new RowEvent(rowData, j + 1))) break;
                 }
 
                 dataMap.put(j, rowData);
@@ -140,6 +84,17 @@ public class DefaultExcelRowDataReadProcess extends AbstractExcelProcess impleme
                 dataMap.remove(j);
             }
         }
+    }
+
+    protected BeanMappingParamResolver createBeanMappingParamResolver() {
+        return new BeanMappingParamResolver(createAnnotationMappingResolverChain());
+    }
+
+    protected AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> createAnnotationMappingResolverChain() {
+        return new AnnotationMappingResolverChain<>(
+            new GetColumnMappingParamResolver(),
+            new ColumnMappingParamResolver()
+        );
     }
 
     protected List<WorkData> getRowData(Row row, FormulaEvaluator fe) {

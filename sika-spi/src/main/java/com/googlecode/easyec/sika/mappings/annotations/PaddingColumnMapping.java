@@ -3,38 +3,21 @@ package com.googlecode.easyec.sika.mappings.annotations;
 import com.googlecode.easyec.sika.converters.ColumnConverter;
 import com.googlecode.easyec.sika.converters.NoOpConverter;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
+import org.springframework.core.annotation.AliasFor;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-/**
- * 针对于<code>Workbook</code>一行中的某一列的注解类。
- *
- * @author JunJie
- */
 @Documented
-@Retention(RUNTIME)
-@Target({ ANNOTATION_TYPE, METHOD })
-public @interface ColumnMapping {
+@ColumnMapping
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PaddingColumnMapping {
 
-    /**
-     * 映射到工作本中的列字母。
-     * 该属性定义了从工作本读取或写入工作本的列。
-     * 列用根据Excel中定义的字母为准，且字母必须为大写。
-     * <p>
-     * Max column name in Excel 2003：IV（256）
-     * <br/>
-     * Max column name in Excel 2007：XFD（16384）
-     * </p>
-     *
-     * @return 列字母
-     */
-    String column() default "";
+    int position();
+
+    String columnForRead() default "";
+
+    String columnForWrite() default "";
 
     /**
      * 定义实现了接口{@link ColumnValidator}的验证器。
@@ -47,6 +30,7 @@ public @interface ColumnMapping {
      * @return 返回列验证器的实现类
      * @see ColumnValidator
      */
+    @AliasFor(annotation = ColumnMapping.class)
     Class<? extends ColumnValidator>[] validators() default { };
 
     /**
@@ -55,5 +39,6 @@ public @interface ColumnMapping {
      * @return 返回列数据转换器的实现类
      * @see ColumnConverter
      */
+    @AliasFor(annotation = ColumnMapping.class)
     Class<? extends ColumnConverter> converter() default NoOpConverter.class;
 }

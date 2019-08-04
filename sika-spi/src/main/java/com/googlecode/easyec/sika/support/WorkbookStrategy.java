@@ -1,17 +1,24 @@
 package com.googlecode.easyec.sika.support;
 
 import com.googlecode.easyec.sika.DocType;
+import com.googlecode.easyec.sika.WorkbookProcessAware;
 import com.googlecode.easyec.sika.mappings.UnknownColumnException;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluatorFactory.calculateColumnIndex;
 import static com.googlecode.easyec.sika.support.WorkbookStrategy.ExceptionBehavior.ThrowOne;
+import static java.util.Collections.emptyList;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
  * 抽象类，用于描述工作本的操作策略
@@ -20,15 +27,10 @@ import static com.googlecode.easyec.sika.support.WorkbookStrategy.ExceptionBehav
  */
 public abstract class WorkbookStrategy {
 
-    /**
-     * 创建默认的工作本策略对象
-     */
-    public static final WorkbookStrategy DEFAULT = createDefault();
-
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     // ----- 列配置 开始
-    private List<Integer> columns = new ArrayList<Integer>();
+    private List<Integer> columns = new ArrayList<>();
     private boolean allColumns;
     // ----- 列配置 结束
 
@@ -40,6 +42,9 @@ public abstract class WorkbookStrategy {
 
     // ----- 指出是否需要拷贝行的样式
     private boolean copyRowStyleOnWrite = true;
+
+    // ----- 范型类型
+    private List<Class> genericTypes;
 
     /**
      * 异常抛出行为的枚举类
@@ -55,30 +60,37 @@ public abstract class WorkbookStrategy {
         ThrowAll
     }
 
-    WorkbookStrategy() {
+    private WorkbookStrategy() {
         this.allColumns = true;
+    }
+
+    protected WorkbookStrategy(Object wb) {
+        this();
+        _init3(wb);
     }
 
     /**
      * 通过一组列名构造工作本策略对象实例
      *
      * @param columnNameList 工作本列名
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 未知的列别名
      */
-    protected WorkbookStrategy(String[] columnNameList) throws UnknownColumnException {
-        Assert.notNull(columnNameList);
+    protected WorkbookStrategy(Object wb, String[] columnNameList) throws UnknownColumnException {
+        Assert.notNull(columnNameList, "List of column name mustn't be null.");
         _init0(columnNameList);
+        _init3(wb);
     }
 
     /**
      * 通过一组列索引构造工作本策略对象实例
      *
      * @param columnIndexList 工作本列索引
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列索引位
      */
-    protected WorkbookStrategy(int[] columnIndexList) throws UnknownColumnException {
-        Assert.notNull(columnIndexList);
+    protected WorkbookStrategy(Object wb, int[] columnIndexList) throws UnknownColumnException {
+        Assert.notNull(columnIndexList, "List of column index mustn't be null.");
         _init1(columnIndexList);
+        _init3(wb);
     }
 
     /**
@@ -87,15 +99,13 @@ public abstract class WorkbookStrategy {
      *
      * @param start 开始列名
      * @param end   结束列名
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列别名对应的索引位
      */
-    protected WorkbookStrategy(String start, String end) throws UnknownColumnException {
-        Assert.notNull(start);
-        Assert.notNull(end);
-        _init2(
-            calculateColumnIndex(start),
-            calculateColumnIndex(end)
-        );
+    protected WorkbookStrategy(Object wb, String start, String end) throws UnknownColumnException {
+        Assert.notNull(start, "Start column mustn't be null.");
+        Assert.notNull(end, "End column mustn't be null.");
+        _init2(calculateColumnIndex(start), calculateColumnIndex(end));
+        _init3(wb);
     }
 
     /**
@@ -104,10 +114,11 @@ public abstract class WorkbookStrategy {
      *
      * @param start 开始列索引
      * @param end   结束列索引
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列索引位
      */
-    protected WorkbookStrategy(int start, int end) throws UnknownColumnException {
+    protected WorkbookStrategy(Object wb, int start, int end) throws UnknownColumnException {
         _init2(start, end);
+        _init3(wb);
     }
 
     private void _init0(String[] columns) throws UnknownColumnException {
@@ -139,7 +150,7 @@ public abstract class WorkbookStrategy {
             throw new UnknownColumnException("Both start column index and end index must be greater than 0.", true);
         }
 
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         for (int i = startIndex; i <= endIndex; i++) {
             list.add(i);
         }
@@ -149,6 +160,38 @@ public abstract class WorkbookStrategy {
                 list.toArray(new Integer[0])
             )
         );
+    }
+
+    /* resolve handler & callback generic types */
+    private void _init3(Object o) {
+        Assert.notNull(o, "Object cannot be null.");
+        Type genType = o.getClass().getGenericSuperclass();
+
+        while (genType instanceof Class) {
+            if (null == ((Class) genType).getSuperclass()) {
+                String msg = "No superclass was found. [" + o.getClass().getName() + "].";
+                logger.error(msg);
+
+                break;
+            }
+
+            genType = ((Class) genType).getGenericSuperclass();
+        }
+
+        if (!(genType instanceof ParameterizedType)) {
+            String msg = o.getClass().getSimpleName() + "'s superclass isn't class ParameterizedType";
+            logger.error(msg);
+
+            this.genericTypes = emptyList();
+
+            return;
+        }
+
+        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+        this.genericTypes
+            = Stream.of(params)
+            .map(type -> type instanceof Class ? (Class) type : type.getClass())
+            .collect(Collectors.toList());
     }
 
     /**
@@ -191,29 +234,43 @@ public abstract class WorkbookStrategy {
         this.copyRowStyleOnWrite = copyRowStyleOnWrite;
     }
 
+    public <T> Class<T> getGenericType(int index) {
+        if (isEmpty(genericTypes)) return null;
+        if (index < 0 || index >= genericTypes.size()) return null;
+
+        try {
+            //noinspection unchecked
+            return genericTypes.get(index);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+
+            return null;
+        }
+    }
+
     /* 创建一个默认策略实例对象 */
-    private static WorkbookStrategy createDefault() {
-        return new DefaultWorkbookStrategy();
+    public static WorkbookStrategy create(WorkbookProcessAware wb) {
+        return new DefaultWorkbookStrategy(wb);
     }
 
     /**
      * 通过一组列名构造工作本策略对象实例
      *
      * @param columns 工作本列名
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列别名对应的索引位
      */
-    public static WorkbookStrategy create(String[] columns) throws UnknownColumnException {
-        return new DefaultWorkbookStrategy(columns);
+    public static WorkbookStrategy create(WorkbookProcessAware wb, String[] columns) throws UnknownColumnException {
+        return new DefaultWorkbookStrategy(wb, columns);
     }
 
     /**
      * 通过一组列索引构造工作本策略对象实例
      *
      * @param columns 工作本列索引
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列索引位
      */
-    public static WorkbookStrategy create(int[] columns) throws UnknownColumnException {
-        return new DefaultWorkbookStrategy(columns);
+    public static WorkbookStrategy create(WorkbookProcessAware wb, int[] columns) throws UnknownColumnException {
+        return new DefaultWorkbookStrategy(wb, columns);
     }
 
     /**
@@ -222,10 +279,10 @@ public abstract class WorkbookStrategy {
      *
      * @param start 开始列名
      * @param end   结束列名
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列别名对应的索引位
      */
-    public static WorkbookStrategy create(String start, String end) throws UnknownColumnException {
-        return new DefaultWorkbookStrategy(start, end);
+    public static WorkbookStrategy create(WorkbookProcessAware wb, String start, String end) throws UnknownColumnException {
+        return new DefaultWorkbookStrategy(wb, start, end);
     }
 
     /**
@@ -234,9 +291,9 @@ public abstract class WorkbookStrategy {
      *
      * @param startCol 开始列索引
      * @param endCol   结束列索引
-     * @throws UnknownColumnException
+     * @throws UnknownColumnException 不能解析给定的列索引位
      */
-    public static WorkbookStrategy create(int startCol, int endCol) throws UnknownColumnException {
-        return new DefaultWorkbookStrategy(startCol, endCol);
+    public static WorkbookStrategy create(WorkbookProcessAware wb, int startCol, int endCol) throws UnknownColumnException {
+        return new DefaultWorkbookStrategy(wb, startCol, endCol);
     }
 }

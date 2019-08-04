@@ -1,9 +1,9 @@
 package com.googlecode.easyec.sika.validations;
 
 import com.googlecode.easyec.sika.Constants;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * 数字类型列数据验证器类。

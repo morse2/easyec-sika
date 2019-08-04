@@ -1,12 +1,12 @@
 package com.googlecode.easyec.sika.mappings;
 
 import com.googlecode.easyec.sika.DocType;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.reverse;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.reverse;
 
 /**
  * DOCUMENT IT
@@ -17,12 +17,12 @@ class ColumnEvaluator {
 
     private static final Logger logger = LoggerFactory.getLogger(ColumnEvaluator.class);
 
-    private static final char alphabet[] = {
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    private static final char[] alphabet = {
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
     };
 
-    public static int getMaxColIndex(DocType docType) throws UnknownColumnException {
+    static int getMaxColIndex(DocType docType) throws UnknownColumnException {
         switch (docType) {
             case EXCEL03:
                 return calculateColIndex("IV");
@@ -31,12 +31,12 @@ class ColumnEvaluator {
         }
 
         logger.trace("The document type isn't Excel, actual type: [" + docType
-                + "], so returns max value of integer.");
+            + "], so returns max value of integer.");
 
         return Integer.MAX_VALUE;
     }
 
-    public static int calculateCol(String s) throws UnknownColumnException {
+    static int calculateCol(String s) throws UnknownColumnException {
         if (isNotBlank(s)) {
             int col = 0;
 
@@ -61,7 +61,7 @@ class ColumnEvaluator {
         return Integer.MIN_VALUE;
     }
 
-    public static int calculateColIndex(String s) throws UnknownColumnException {
+    static int calculateColIndex(String s) throws UnknownColumnException {
         return (calculateCol(s) - 1);
     }
 }

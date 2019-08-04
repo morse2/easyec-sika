@@ -1,17 +1,14 @@
 package com.googlecode.easyec.sika.mappings;
 
-import com.googlecode.easyec.sika.DocType;
 import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.util.List;
 
-import static com.googlecode.easyec.sika.mappings.AnnotationColumnMappingAdapter.fill;
 import static com.googlecode.easyec.sika.mappings.AnnotationColumnMappingAdapter.refill;
 
 /**
@@ -63,40 +60,6 @@ public class ColumnEvaluatorFactory {
      */
     public static int calculateColumnIndex(String col) throws UnknownColumnException {
         return ColumnEvaluator.calculateColIndex(col);
-    }
-
-    /**
-     * 合并工作本行数据到给定的Bean对象的属性中。
-     *
-     * @param index 行索引号
-     * @param list  列数据集合
-     * @param type  文档类型枚举
-     * @param cls   目标Bean对象
-     * @param <T>   泛型对象
-     * @return 返回目标Bean对象实例
-     * @throws WorkingException
-     */
-    public static <T> T mergeBean(int index, List<WorkData> list, DocType type, Class<T> cls) throws WorkingException {
-        WorkbookStrategy strategy = WorkbookStrategy.DEFAULT;
-        strategy.setDocType(type);
-        return mergeBean(index, list, strategy, cls);
-    }
-
-    /**
-     * 合并工作本行数据到给定的Bean对象的属性中。
-     *
-     * @param index    行索引号
-     * @param list     列数据集合
-     * @param strategy 工作本策略对象
-     * @param cls      目标Bean对象
-     * @param <T>      泛型对象
-     * @return 返回目标Bean对象实例
-     * @throws WorkingException
-     */
-    public static <T> T mergeBean(int index, List<WorkData> list, WorkbookStrategy strategy, Class<T> cls) throws WorkingException {
-        BeanWrapper bw = new BeanWrapperImpl(cls);
-        fill(index, bw, list, strategy);
-        return cls.cast(bw.getWrappedInstance());
     }
 
     /**

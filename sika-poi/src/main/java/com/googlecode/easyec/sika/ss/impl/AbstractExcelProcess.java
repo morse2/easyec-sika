@@ -1,4 +1,4 @@
-package com.googlecode.easyec.sika.ss;
+package com.googlecode.easyec.sika.ss.impl;
 
 import com.googlecode.easyec.sika.WorkbookProcess;
 import com.googlecode.easyec.sika.WorkbookProcessAware;
