@@ -1,15 +1,10 @@
 package com.googlecode.easyec.sika.mappings;
 
 import com.googlecode.easyec.sika.WorkData;
-import com.googlecode.easyec.sika.WorkingException;
-import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanWrapperImpl;
 
 import java.util.List;
-
-import static com.googlecode.easyec.sika.mappings.AnnotationColumnMappingAdapter.refill;
 
 /**
  * 工作本列解析工厂类。
@@ -60,18 +55,5 @@ public class ColumnEvaluatorFactory {
      */
     public static int calculateColumnIndex(String col) throws UnknownColumnException {
         return ColumnEvaluator.calculateColIndex(col);
-    }
-
-    /**
-     * 从给定的对象中解析出工作本的列数据信息
-     *
-     * @param index    行索引号
-     * @param obj      业务对象
-     * @param strategy 工作本策略对象
-     * @return 工作表列数据集合
-     * @throws WorkingException
-     */
-    public static List<WorkData> fromBean(int index, Object obj, WorkbookStrategy strategy) throws WorkingException {
-        return refill(new BeanWrapperImpl(obj), strategy);
     }
 }

@@ -18,24 +18,23 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 
 import static com.googlecode.easyec.sika.support.WorkbookStrategy.ExceptionBehavior.ThrowAll;
-import static org.springframework.beans.PropertyAccessorFactory.forBeanPropertyAccess;
 
-public class BeanMappingParamResolver extends AbstractAnnotationMappingParamResolver<BeanAnnotationMappingParam, BeanWrapper> {
+public abstract class AbstractBeanMappingParamResolver<P extends BeanAnnotationMappingParam> extends AbstractAnnotationMappingParamResolver<P, BeanWrapper> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> annotationMappingResolverChain;
+    private AnnotationMappingResolverChain<? extends BeanPropertyAnnotationMappingParam, PropertyDescriptor> annotationMappingResolverChain;
 
-    public BeanMappingParamResolver(AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> annotationMappingResolverChain) {
+    public AbstractBeanMappingParamResolver(AnnotationMappingResolverChain<? extends BeanPropertyAnnotationMappingParam, PropertyDescriptor> annotationMappingResolverChain) {
         this.annotationMappingResolverChain = annotationMappingResolverChain;
     }
 
-    public AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> getAnnotationMappingResolverChain() {
+    public AnnotationMappingResolverChain<? extends BeanPropertyAnnotationMappingParam, PropertyDescriptor> getAnnotationMappingResolverChain() {
         return annotationMappingResolverChain;
     }
 
     @Override
-    public Boolean perform(int rowIndex, WorkbookStrategy strategy, BeanAnnotationMappingParam beanParam) throws WorkingException {
+    public Boolean perform(int rowIndex, WorkbookStrategy strategy, P beanParam) throws WorkingException {
         BeanWrapper bw = beanParam.getParameter();
 
         for (PropertyDescriptor pd : bw.getPropertyDescriptors()) {
@@ -62,12 +61,11 @@ public class BeanMappingParamResolver extends AbstractAnnotationMappingParamReso
                 Class<?> type = (Class<?>) attributes.get("value");
                 logger.debug("Property: [{}], type: [{}].", propertyName, type.getName());
 
-                BeanWrapper bwModel = forBeanPropertyAccess(type);
-                perform(rowIndex, strategy, new BeanAnnotationMappingParam(bwModel, beanParam.getDataList(), beanParam.getException()));
+                perform(rowIndex, strategy, createBeanAnnotationMappingParam(type, beanParam));
 
                 try {
-                    // set original value.
-                    beanParam.setOriginalValue(bwModel.getWrappedInstance());
+                    // compute original value
+                    beanParam.computeOriginalValue(null);
                     // convert original value to resolved.
                     processOriginalValue(getConverter(attributes, BeanConverter.class), beanParam);
                     // validate resolved value.
@@ -85,8 +83,8 @@ public class BeanMappingParamResolver extends AbstractAnnotationMappingParamReso
                 continue;
             }
 
-            getAnnotationMappingResolverChain().perform(
-                rowIndex, strategy, new BeanPropertyAnnotationMappingParam(bw, pd, beanParam.getDataList(), beanParam.getException())
+            getAnnotationMappingResolverChain().perform(rowIndex, strategy,
+                createBeanPropertyAnnotationMappingParam(bw, pd, beanParam)
             );
         }
 
@@ -98,7 +96,11 @@ public class BeanMappingParamResolver extends AbstractAnnotationMappingParamReso
         return BeanMapping.class;
     }
 
-    protected void processOriginalValue(BeanConverter<?> converter, BeanAnnotationMappingParam param) {
+    abstract protected P createBeanAnnotationMappingParam(Class<?> type, P parent);
+
+    abstract protected <T extends BeanPropertyAnnotationMappingParam> T createBeanPropertyAnnotationMappingParam(BeanWrapper bw, PropertyDescriptor pd, P param);
+
+    protected void processOriginalValue(BeanConverter<?> converter, P param) {
         Object newVal = param.getOriginalValue();
         if (converter != null) {
             newVal = converter.adorn(newVal);
@@ -108,7 +110,7 @@ public class BeanMappingParamResolver extends AbstractAnnotationMappingParamReso
         param.setResolvedValue(newVal);
     }
 
-    protected void processValidators(Class<? extends ColumnValidator>[] validators, int rowIndex, WorkbookStrategy strategy, BeanAnnotationMappingParam param) throws WorkingException {
+    protected void processValidators(Class<? extends ColumnValidator>[] validators, int rowIndex, WorkbookStrategy strategy, P param) throws WorkingException {
         if (ArrayUtils.isNotEmpty(validators)) {
             for (Class<? extends ColumnValidator> validator : validators) {
                 ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);

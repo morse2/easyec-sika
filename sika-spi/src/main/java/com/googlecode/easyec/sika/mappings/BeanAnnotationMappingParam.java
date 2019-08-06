@@ -1,18 +1,22 @@
 package com.googlecode.easyec.sika.mappings;
 
-import com.googlecode.easyec.sika.WorkData;
 import org.springframework.beans.BeanWrapper;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
-import java.util.List;
 
-public class BeanAnnotationMappingParam extends DataValueAnnotationMappingParam<BeanWrapper> {
+public abstract class BeanAnnotationMappingParam extends DataValueAnnotationMappingParam<BeanWrapper> {
 
+    private MappingsException exception;
     private PropertyDescriptor currentProperty;
 
-    public BeanAnnotationMappingParam(BeanWrapper parameter, List<WorkData> dataList, MappingsException exception) {
-        super(parameter, dataList, exception);
+    public BeanAnnotationMappingParam(BeanWrapper parameter, MappingsException exception) {
+        super(parameter);
+        this.exception = exception;
+    }
+
+    public MappingsException getException() {
+        return exception;
     }
 
     public PropertyDescriptor getCurrentProperty() {
@@ -23,24 +27,17 @@ public class BeanAnnotationMappingParam extends DataValueAnnotationMappingParam<
         this.currentProperty = currentProperty;
     }
 
-    public String getPropertyName() {
-        return getCurrentProperty().getName();
-    }
-
     public boolean isReadableProperty() {
         return getParameter().isReadableProperty(getPropertyName());
     }
 
     @Override
-    public void resolved() {
-        getParameter().setPropertyValue(
-            getCurrentProperty().getName(),
-            getResolvedValue()
-        );
+    protected Method getMethod() {
+        return getCurrentProperty().getReadMethod();
     }
 
     @Override
-    protected Method getMethod() {
-        return getCurrentProperty().getReadMethod();
+    public String getPropertyName() {
+        return getCurrentProperty().getName();
     }
 }

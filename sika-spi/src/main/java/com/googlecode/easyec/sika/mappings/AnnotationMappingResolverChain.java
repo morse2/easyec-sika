@@ -12,6 +12,7 @@ public class AnnotationMappingResolverChain<IN extends AnnotationMappingParam<T>
 
     private List<AnnotationMappingParamResolver<IN, T>> resolvers = new ArrayList<>();
 
+    @SafeVarargs
     public AnnotationMappingResolverChain(AnnotationMappingParamResolver<IN, T>... resolvers) {
         Assert.notNull(resolvers, "AnnotationMappingParamResolver(s) must't be null.");
 

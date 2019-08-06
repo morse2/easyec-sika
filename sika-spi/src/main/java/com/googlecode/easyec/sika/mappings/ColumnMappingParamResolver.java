@@ -1,7 +1,6 @@
 package com.googlecode.easyec.sika.mappings;
 
 import com.googlecode.easyec.sika.DocType;
-import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.converters.ColumnConverter;
 import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
@@ -17,18 +16,18 @@ import org.springframework.beans.BeanUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Map;
 
+import static com.googlecode.easyec.sika.Constants.ALIAS_INTERNAL_ERROR;
 import static com.googlecode.easyec.sika.mappings.ColumnEvaluator.*;
 import static com.googlecode.easyec.sika.support.WorkbookStrategy.ExceptionBehavior.ThrowAll;
 
-public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamResolver<BeanPropertyAnnotationMappingParam, PropertyDescriptor> {
+public class ColumnMappingParamResolver<P extends BeanPropertyAnnotationMappingParam> extends AbstractAnnotationMappingParamResolver<P, PropertyDescriptor> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public Boolean perform(int rowIndex, WorkbookStrategy strategy, BeanPropertyAnnotationMappingParam propParam) throws WorkingException {
+    public Boolean perform(int rowIndex, WorkbookStrategy strategy, P propParam) throws WorkingException {
         if (propParam.isAnnotated(getAnnotationType())) {
             Map<String, Object> attributes = propParam.getAnnotationAttributes(getAnnotationType());
             String col = getColumn(attributes);
@@ -36,22 +35,11 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
                 return false;
             }
 
-            int colIndex = calculateColIndex(col);
-            logger.debug("Column name of index: [{}], [{}]. Property: [{}].", col, colIndex, propParam.getPropertyName());
-
             try {
-                /*
-                 * 获取文档单元格中的数据，
-                 * 如果期望的列索引值大于
-                 * 单元格的列索引数量，则
-                 * 直接返回null
-                 */
-                List<WorkData> dataList = propParam.getDataList();
-                Object val = (colIndex < dataList.size()) ? dataList.get(colIndex).getValue() : null;
-                logger.debug("The original value is: [{}], property: [{}].", val, propParam.getPropertyName());
-
-                propParam.setOriginalValue(val);
+                // compute original value
+                propParam.computeOriginalValue(col);
                 // convert original value to resolved.
+                // noinspection unchecked
                 processOriginalValue(getConverter(attributes, ColumnConverter.class), propParam);
                 // validate resolved value.
                 processValidators(getValidators(attributes), col, rowIndex, strategy, propParam);
@@ -63,7 +51,8 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
                 if (logger.isErrorEnabled()) {
                     StringBuffer sb = new StringBuffer();
                     sb.append("An error Occurred when using parameter colIndex [");
-                    sb.append(colIndex).append("] on field: [").append(propParam.getPropertyName());
+                    sb.append(calculateColIndex(col)).append("] on field: [");
+                    sb.append(propParam.getPropertyName());
                     sb.append("]. Exception: ").append(e.getMessage());
                     logger.error(sb.toString());
                 }
@@ -86,14 +75,14 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
                             .append("Some errors have been occurred at row: [")
                             .append(rowIndex + 1)
                             .append("], col: [")
-                            .append(colIndex + 1)
+                            .append(calculateCol(col))
                             .append("]. Check it, please! Exception: ")
                             .append(e.getMessage())
                             .toString()
                     );
                 }
 
-                throw new MappingException(e, true, "INTERNAL_ERR");
+                throw new MappingException(e, true, ALIAS_INTERNAL_ERROR);
             }
         }
 
@@ -106,7 +95,7 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
         return ColumnMapping.class;
     }
 
-    protected boolean checkColumn(String col, WorkbookStrategy strategy, BeanPropertyAnnotationMappingParam propParam) throws UnknownColumnException {
+    protected boolean checkColumn(String col, WorkbookStrategy strategy, P propParam) throws UnknownColumnException {
         logger.debug("Column [{}] will be to resolve. Property: [{}]", col, propParam.getPropertyName());
 
         if (StringUtils.isBlank(col)) {
@@ -165,7 +154,7 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
         return true;
     }
 
-    protected void processOriginalValue(ColumnConverter<Object, ?> converter, BeanPropertyAnnotationMappingParam param) {
+    protected void processOriginalValue(ColumnConverter<Object, ?> converter, P param) {
         Object newVal = param.getOriginalValue();
         if (converter != null) {
             newVal = converter.adorn(newVal);
@@ -175,7 +164,7 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
         param.setResolvedValue(newVal);
     }
 
-    protected void processValidators(Class<? extends ColumnValidator>[] validators, String col, int rowIndex, WorkbookStrategy strategy, BeanPropertyAnnotationMappingParam param) throws WorkingException {
+    protected void processValidators(Class<? extends ColumnValidator>[] validators, String col, int rowIndex, WorkbookStrategy strategy, P param) throws WorkingException {
         if (ArrayUtils.isNotEmpty(validators)) {
             for (Class<? extends ColumnValidator> validator : validators) {
                 ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);

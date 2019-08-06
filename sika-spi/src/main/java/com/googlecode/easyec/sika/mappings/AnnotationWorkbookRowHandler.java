@@ -17,7 +17,7 @@ import java.util.List;
  */
 public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler {
 
-    private BeanMappingParamResolver beanMappingParamResolver;
+    private BeanReadMappingParamResolver beanReadMappingParamResolver;
 
     protected AnnotationWorkbookRowHandler() {
         super();
@@ -27,17 +27,17 @@ public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler
         super(header);
     }
 
-    public BeanMappingParamResolver getBeanMappingParamResolver() {
-        return beanMappingParamResolver;
+    public BeanReadMappingParamResolver getBeanReadMappingParamResolver() {
+        return beanReadMappingParamResolver;
     }
 
-    public void setBeanMappingParamResolver(BeanMappingParamResolver beanMappingParamResolver) {
-        this.beanMappingParamResolver = beanMappingParamResolver;
+    public void setBeanReadMappingParamResolver(BeanReadMappingParamResolver beanReadMappingParamResolver) {
+        this.beanReadMappingParamResolver = beanReadMappingParamResolver;
     }
 
     @Override
     public boolean populate(int index, List<WorkData> data) throws WorkingException {
-        Assert.notNull(getBeanMappingParamResolver(), "BeanMappingParamResolver cannot be null.");
+        Assert.notNull(getBeanReadMappingParamResolver(), "BeanReadMappingParamResolver cannot be null.");
 
         T ret;
 
@@ -47,9 +47,9 @@ public abstract class AnnotationWorkbookRowHandler<T> extends WorkbookRowHandler
             Class<?> cls = getStrategy().getGenericType(0);
             BeanWrapper bw = new BeanWrapperImpl(cls);
             MappingsException ex = new MappingsException();
-            getBeanMappingParamResolver().perform(
+            getBeanReadMappingParamResolver().perform(
                 index, getStrategy(),
-                new BeanAnnotationMappingParam(bw, data, ex)
+                new BeanReadAnnotationMappingParam(bw, data, ex)
             );
 
             if (ex.hasExceptions()) throw ex;

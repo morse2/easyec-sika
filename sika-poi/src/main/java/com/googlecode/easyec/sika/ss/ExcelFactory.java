@@ -107,21 +107,29 @@ public final class ExcelFactory {
 
     @Deprecated
     public byte[] write(InputStream in, WorkbookWriter writer) throws WorkingException {
-        return doWrite(in, writer, new DefaultExcelRowDataWriteProcess());
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+        doWrite(in, bos, writer, new DefaultExcelRowDataWriteProcess());
+        return bos.toByteArray();
     }
 
-    public byte[] write(InputStream in, WorkbookCallback<?>... cbs) throws WorkingException {
-        return write(in, new DefaultExcelRowDataWriteProcess(), cbs);
+    public byte[] writeLines(InputStream in, WorkbookCallback<?>... cbs) throws WorkingException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+        writeLines(in, bos, cbs);
+        return bos.toByteArray();
     }
 
-    public byte[] write(InputStream in, ExcelWriteProcess proc, WorkbookCallback<?>... cbs) throws WorkingException {
+    public void writeLines(InputStream in, OutputStream out, WorkbookCallback<?>... cbs) throws WorkingException {
+        write(in, out, new DefaultExcelRowDataWriteProcess(), cbs);
+    }
+
+    public void write(InputStream in, OutputStream out, ExcelWriteProcess proc, WorkbookCallback<?>... cbs) throws WorkingException {
         Assert.isTrue(isNotEmpty(cbs), "WorkbookCallback should provide one or more at least.");
         Assert.notNull(proc, "ExcelWriteProcess must be provided.");
 
         final WorkbookWriter writer = new WorkbookWriter();
         Stream.of(cbs).forEach(writer::add);
 
-        return doWrite(in, writer, proc);
+        doWrite(in, out, writer, proc);
     }
 
     private void doRead(InputStream in, WorkbookReader reader, ExcelReadProcess proc) throws WorkingException {
@@ -143,15 +151,13 @@ public final class ExcelFactory {
         }
     }
 
-    private byte[] doWrite(InputStream in, WorkbookWriter writer, ExcelWriteProcess proc) throws WorkingException {
+    private void doWrite(InputStream in, OutputStream out, WorkbookWriter writer, ExcelWriteProcess proc) throws WorkingException {
         Workbook wb = null;
 
         try {
             assertEmptyWorkbookHandler(writer);
-
             wb = WorkbookFactory.create(in);
-
-            return proc.write(wb, writer);
+            proc.write(wb, writer, out);
         } catch (WorkingException e) {
             throw e;
         } catch (Exception e) {

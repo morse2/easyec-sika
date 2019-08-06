@@ -4,7 +4,7 @@ import com.googlecode.easyec.sika.mappings.annotations.ColumnWriteMapping;
 
 import java.lang.annotation.Annotation;
 
-public class PutColumnMappingParamResolver extends ColumnMappingParamResolver {
+public class ColumnWriteMappingParamResolver extends ColumnMappingParamResolver<BeanPropertyWriteAnnotationMappingParam> {
 
     @Override
     protected Class<? extends Annotation> getAnnotationType() {

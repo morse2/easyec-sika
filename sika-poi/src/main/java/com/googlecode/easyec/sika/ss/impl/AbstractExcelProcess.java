@@ -30,17 +30,17 @@ public class AbstractExcelProcess implements WorkbookProcess {
     }
 
     protected int getRowNum(Sheet sheet) {
-        int lastRowNum = sheet.getLastRowNum();
-        return lastRowNum < sheet.getPhysicalNumberOfRows()
-            ? sheet.getPhysicalNumberOfRows()
-            : lastRowNum;
+        return Math.max(
+            sheet.getLastRowNum(),
+            sheet.getPhysicalNumberOfRows()
+        );
     }
 
     protected int getCellNum(Row row) {
-        int lastCellNum = row.getLastCellNum();
-        return lastCellNum < row.getPhysicalNumberOfCells()
-            ? row.getPhysicalNumberOfCells()
-            : lastCellNum;
+        return Math.max(
+            row.getLastCellNum(),
+            row.getPhysicalNumberOfCells()
+        );
     }
 
     protected Row getOrCreate(Sheet sheet, int i) {

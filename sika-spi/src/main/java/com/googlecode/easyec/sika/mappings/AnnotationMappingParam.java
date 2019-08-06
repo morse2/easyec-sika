@@ -1,6 +1,11 @@
 package com.googlecode.easyec.sika.mappings;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class AnnotationMappingParam<T> {
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private T parameter;
 

@@ -16,7 +16,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.util.CollectionUtils;
 
 import java.beans.PropertyDescriptor;
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,8 +28,7 @@ import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.CREATE_NULL_AS_B
 public class DefaultExcelRowDataWriteProcess extends AbstractExcelProcess implements ExcelWriteProcess {
 
     @Override
-    public byte[] write(Workbook wb, WorkbookWriter writer) throws WorkingException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+    public void write(Workbook wb, WorkbookWriter writer, OutputStream out) throws WorkingException {
         int removeSheetCount = 0;  // 需要执行删除工作表的次数
 
         out:
@@ -77,6 +76,15 @@ public class DefaultExcelRowDataWriteProcess extends AbstractExcelProcess implem
 
             // do init method
             doInit(wb, callback);
+
+            // set BeanWriteMappingParamResolver if callback is instanceof AnnotationWorkbookCallback
+            if (callback instanceof AnnotationWorkbookRowCallback) {
+                AnnotationWorkbookRowCallback<Object> anCallback = (AnnotationWorkbookRowCallback<Object>) callback;
+                BeanWriteMappingParamResolver resolver = anCallback.getBeanWriteMappingParamResolver();
+                if (resolver == null) {
+                    anCallback.setBeanWriteMappingParamResolver(createBeanMappingParamResolver());
+                }
+            }
 
             try {
                 list = callback.doGrab();
@@ -191,17 +199,16 @@ public class DefaultExcelRowDataWriteProcess extends AbstractExcelProcess implem
 
             throw new WorkingException(e, true);
         }
-
-        return out.toByteArray();
     }
 
-    protected BeanMappingParamResolver createBeanMappingParamResolver() {
-        return new BeanMappingParamResolver(createAnnotationMappingResolverChain());
+    protected BeanWriteMappingParamResolver createBeanMappingParamResolver() {
+        return new BeanWriteMappingParamResolver(createAnnotationMappingResolverChain());
     }
 
-    protected AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> createAnnotationMappingResolverChain() {
+    @SuppressWarnings("unchecked")
+    protected AnnotationMappingResolverChain<BeanPropertyWriteAnnotationMappingParam, PropertyDescriptor> createAnnotationMappingResolverChain() {
         return new AnnotationMappingResolverChain<>(
-            new PutColumnMappingParamResolver(),
+            new ColumnWriteMappingParamResolver(),
             new ColumnMappingParamResolver()
         );
     }

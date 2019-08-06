@@ -33,9 +33,9 @@ public class DefaultExcelRowDataReadProcess extends AbstractExcelReadProcess {
 
         if (handler instanceof AnnotationWorkbookRowHandler) {
             AnnotationWorkbookRowHandler anHandler = (AnnotationWorkbookRowHandler) handler;
-            BeanMappingParamResolver resolver = anHandler.getBeanMappingParamResolver();
+            AbstractBeanMappingParamResolver resolver = anHandler.getBeanReadMappingParamResolver();
             if (resolver == null) {
-                anHandler.setBeanMappingParamResolver(createBeanMappingParamResolver());
+                anHandler.setBeanReadMappingParamResolver(createBeanMappingParamResolver());
             }
         }
 
@@ -86,13 +86,14 @@ public class DefaultExcelRowDataReadProcess extends AbstractExcelReadProcess {
         }
     }
 
-    protected BeanMappingParamResolver createBeanMappingParamResolver() {
-        return new BeanMappingParamResolver(createAnnotationMappingResolverChain());
+    protected BeanReadMappingParamResolver createBeanMappingParamResolver() {
+        return new BeanReadMappingParamResolver(createAnnotationMappingResolverChain());
     }
 
-    protected AnnotationMappingResolverChain<BeanPropertyAnnotationMappingParam, PropertyDescriptor> createAnnotationMappingResolverChain() {
+    @SuppressWarnings("unchecked")
+    protected AnnotationMappingResolverChain<? extends BeanPropertyAnnotationMappingParam, PropertyDescriptor> createAnnotationMappingResolverChain() {
         return new AnnotationMappingResolverChain<>(
-            new GetColumnMappingParamResolver(),
+            new ColumnReadMappingParamResolver(),
             new ColumnMappingParamResolver()
         );
     }
