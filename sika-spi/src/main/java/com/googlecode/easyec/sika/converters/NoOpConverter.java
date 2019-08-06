@@ -5,13 +5,9 @@ package com.googlecode.easyec.sika.converters;
  *
  * @author JunJie
  */
-public class NoOpConverter implements ModelConverter<Object>, ColumnConverter<Object> {
+public class NoOpConverter implements BeanConverter<Object>, ColumnConverter<Object, Object> {
 
     public Object adorn(Object val) {
         return val;
-    }
-
-    public Object conceal(Object original) {
-        return original;
     }
 }

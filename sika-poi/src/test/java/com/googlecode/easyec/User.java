@@ -1,6 +1,7 @@
 package com.googlecode.easyec;
 
 import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
+import com.googlecode.easyec.sika.mappings.annotations.ColumnReadMapping;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,9 +16,7 @@ public class User {
     private String gender;
     private int age;
 
-    @ColumnMapping(
-        column = "A"
-    )
+    @ColumnMapping(column = "A")
     public String getName() {
         return name;
     }
@@ -26,9 +25,7 @@ public class User {
         this.name = name;
     }
 
-    @ColumnMapping(
-        column = "C"
-    )
+    @ColumnMapping(column = "C")
     public String getGender() {
         return gender;
     }
@@ -37,9 +34,7 @@ public class User {
         this.gender = gender;
     }
 
-    @ColumnMapping(
-        column = "B"
-    )
+    @ColumnReadMapping(column = "B")
     public int getAge() {
         return age;
     }

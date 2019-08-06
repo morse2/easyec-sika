@@ -3,7 +3,7 @@ package com.googlecode.easyec.sika.csv;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import com.googlecode.easyec.sika.*;
-import com.googlecode.easyec.sika.converters.Object2StringConverter;
+import com.googlecode.easyec.sika.converters.StringColumnConverter;
 import com.googlecode.easyec.sika.event.RowEvent;
 import com.googlecode.easyec.sika.event.WorkbookBlankRowListener;
 import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static com.googlecode.easyec.sika.DocType.CSV;
 import static com.googlecode.easyec.sika.csv.CsvSchema.DEFAULT;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
@@ -95,7 +96,7 @@ public final class CsvFactory {
         CSVWriter writer = new CSVWriter(
             w,
             schema.getSeparator(),
-            schema.getQuotechar(),
+            schema.getQuoteChar(),
             schema.getEscape(),
             schema.getLineEnd()
         );
@@ -129,26 +130,24 @@ public final class CsvFactory {
                 List<WorkData[]> headerList = header.getHeaderList();
 
                 for (WorkData[] data : headerList) {
-                    List<String> list = new ArrayList<String>();
+                    List<String> list = new ArrayList<>();
 
                     for (WorkData d : data) {
                         switch (d.getWorkDataType()) {
                             case DATE:
-                                list.add(d.getValue(schema.getDateColumnConverter()));
-                                break;
                             case NUMBER:
-                                list.add(d.getValue(new Object2StringConverter()));
+                                list.add(d.getValue(new StringColumnConverter()));
                                 break;
                             case STRING:
                                 list.add((String) d.getValue());
                                 break;
                             case NULL:
                             default:
-                                list.add("");
+                                list.add(EMPTY);
                         }
                     }
 
-                    writer.writeNext(list.toArray(new String[list.size()]));
+                    writer.writeNext(list.toArray(new String[0]));
                 }
 
                 List<Object> ts = callback.doGrab();
@@ -158,15 +157,13 @@ public final class CsvFactory {
                     for (int i = 0; i < ts.size(); i++) {
                         try {
                             List<WorkData> data = callback.populate(i, ts.get(i));
-                            List<String> list = new ArrayList<String>();
+                            List<String> list = new ArrayList<>();
 
                             for (WorkData d : data) {
                                 switch (d.getWorkDataType()) {
                                     case DATE:
-                                        list.add(d.getValue(schema.getDateColumnConverter()));
-                                        break;
                                     case NUMBER:
-                                        list.add(d.getValue(new Object2StringConverter()));
+                                        list.add(d.getValue(new StringColumnConverter()));
                                         break;
                                     case STRING:
                                         list.add((String) d.getValue());
@@ -177,7 +174,7 @@ public final class CsvFactory {
                                 }
                             }
 
-                            writer.writeNext(list.toArray(new String[list.size()]));
+                            writer.writeNext(list.toArray(new String[0]));
                         } catch (WorkingException e) {
                             callback.doCatch(e);
 
@@ -241,7 +238,7 @@ public final class CsvFactory {
             CSVReader csvReader = new CSVReader(
                 reader,
                 schema.getSeparator(),
-                schema.getQuotechar(),
+                schema.getQuoteChar(),
                 schema.getEscape(),
                 0,
                 schema.isStrictQuotes(),

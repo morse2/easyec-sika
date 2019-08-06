@@ -4,16 +4,16 @@ import com.googlecode.easyec.sika.DocType;
 import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.converters.ColumnConverter;
-import com.googlecode.easyec.sika.converters.ModelConverter;
 import com.googlecode.easyec.sika.data.DefaultWorkData;
+import com.googlecode.easyec.sika.mappings.annotations.BeanMapping;
 import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
-import com.googlecode.easyec.sika.mappings.annotations.ModelMapping;
 import com.googlecode.easyec.sika.support.WorkbookStrategy;
-import com.googlecode.easyec.sika.validations.AbstractColumnValidator;
-import com.googlecode.easyec.sika.validations.ColumnValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeansException;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -35,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *
  * @author JunJie
  * @see ColumnMapping
- * @see ModelMapping
+ * @see BeanMapping
  */
 final class AnnotationColumnMappingAdapter {
 
@@ -47,7 +47,6 @@ final class AnnotationColumnMappingAdapter {
             logger.trace("Prepare to populate data of row: [{}].", (rowIndex + 1));
 
             MappingsException ex = new MappingsException();
-            _fill(rowIndex, bw, dataList, strategy, ex);
             if (ex.hasExceptions()) throw ex;
         } finally {
             logger.trace("Finish populating data of row: [{}].", (rowIndex + 1));
@@ -71,218 +70,6 @@ final class AnnotationColumnMappingAdapter {
         return list;
     }
 
-    private static void _fill(int rowIndex, BeanWrapper bw, List<WorkData> dataList, WorkbookStrategy strategy, MappingsException allEx)
-        throws WorkingException {
-        PropertyDescriptor[] pds = bw.getPropertyDescriptors();
-        out:
-        for (PropertyDescriptor pd : pds) {
-            String propertyName = pd.getName();
-            if (!bw.isReadableProperty(propertyName)) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn("Property [{}] has no any readable method.", propertyName);
-                }
-
-                continue;
-            }
-
-            Method m = pd.getReadMethod();
-            // if both ModelMapping and ColumnMapper have been set at same time,
-            // then firstly ModelMapping would be processed, and ColumnMapping will be ignored.
-            if (m.isAnnotationPresent(ModelMapping.class)) {
-                ModelMapping mm = m.getAnnotation(ModelMapping.class);
-                Class<?> type = mm.value();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Property: [" + propertyName + "], type: [" + type.getName() + "].");
-                }
-
-                BeanWrapper bwModel = new BeanWrapperImpl(type);
-                _fill(rowIndex, bwModel, dataList, strategy, allEx);
-
-                try {
-                    // 获取封装的对象实例
-                    Object val = bwModel.getWrappedInstance();
-                    // 初始化ModelConverter对象
-                    ModelConverter mc = BeanUtils.instantiateClass(mm.converter());
-                    // 执行转换的操作
-                    Object newVal = mc.adorn(val);
-                    logger.debug("The new value after converting is: [{}].", newVal);
-
-                    Class<? extends ColumnValidator>[] validators = mm.validators();
-                    for (Class<? extends ColumnValidator> validator : validators) {
-                        ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
-
-                        if (!cv.accept(newVal)) {
-                            StringBuffer sb = new StringBuffer();
-                            sb.append("An error occurred when checking type of data. field: [");
-                            sb.append(propertyName).append("], Model value: [").append(type.getName());
-                            sb.append("] and value: [").append(val).append("]. Error type: [");
-                            sb.append(cv.getAlias()).append("]");
-
-                            if (logger.isErrorEnabled()) {
-                                logger.error(sb.toString());
-                            }
-
-                            MappingException ex = new MappingException(sb.toString(), false, cv.getAlias());
-                            ex.setRow(rowIndex + 1);
-
-                            if (cv instanceof AbstractColumnValidator) {
-                                ex.setSource(((AbstractColumnValidator) cv).getSource());
-                            }
-
-                            switch (strategy.getExceptionBehavior()) {
-                                case ThrowAll:
-                                    allEx.add(ex);
-                                    break;
-                                default:
-                                    throw ex;
-                            }
-                        }
-                    }
-
-                    bw.setPropertyValue(propertyName, newVal);
-                } catch (BeanInstantiationException e) {
-                    if (logger.isErrorEnabled()) {
-                        logger.error(e.getMessage(), e);
-                    }
-
-                    throw new WorkingException(e, false);
-                }
-
-                continue;
-            }
-
-            if (m.isAnnotationPresent(ColumnMapping.class)) {
-                ColumnMapping cm = m.getAnnotation(ColumnMapping.class);
-
-                // TODO: 2019-07-25  
-                String col = null;// cm.columnForRead();
-                if (isBlank(col)) col = cm.column();
-                logger.debug("Column [{}] will be read.", col);
-
-                int colIndex = calculateColIndex(col);
-                if (colIndex < 0) {
-                    if (logger.isTraceEnabled()) {
-                        StringBuffer sb = new StringBuffer();
-                        sb.append("Annotation ColumnMapper on field: [");
-                        sb.append(propertyName).append("] is out of range: [");
-                        sb.append(colIndex).append("]. The value must be greater than 0. So ignore it.");
-                        logger.trace(sb.toString());
-                    }
-
-                    continue;
-                }
-
-                DocType docType = strategy.getDocType();
-                if (docType != null && colIndex > getMaxColIndex(docType)) {
-                    if (logger.isTraceEnabled()) {
-                        StringBuffer sb = new StringBuffer();
-                        sb.append("Annotation ColumnMapper on field: [");
-                        sb.append(propertyName).append("]. The value must be between in 0 and ");
-                        sb.append(getMaxColIndex(docType)).append(". So ignore it.");
-                        logger.trace(sb.toString());
-                    }
-
-                    continue;
-                }
-
-                try {
-                    // 判断当前取值索引号是否在已配置的策略范围内
-                    if (!strategy.isColumnConfigured(colIndex)) {
-                        if (logger.isTraceEnabled()) {
-                            logger.trace(
-                                new StringBuffer()
-                                    .append("Current column index isn't in strategy which configured columns. Index: [")
-                                    .append(colIndex)
-                                    .append("], so ignore it.")
-                                    .toString()
-                            );
-                        }
-
-                        continue;
-                    }
-
-                    /*
-                     * 获取文档单元格中的数据，
-                     * 如果期望的列索引值大于
-                     * 单元格的列索引数量，则
-                     * 直接返回null
-                     */
-                    Object val = (colIndex < dataList.size()) ? dataList.get(colIndex).getValue() : null;
-                    // 先执行convert动作，而后在对convert后的数据进行校验
-                    Object newVal = ((ColumnConverter) BeanUtils.instantiateClass(cm.converter())).adorn(val);
-                    logger.debug("The new value after converting is: [{}].", newVal);
-
-                    Class<? extends ColumnValidator>[] validators = cm.validators();
-                    for (Class<? extends ColumnValidator> validator : validators) {
-                        ColumnValidator cv = (ColumnValidator) BeanUtils.instantiateClass(validator);
-                        if (!cv.accept(newVal)) {
-                            StringBuffer sb = new StringBuffer();
-                            sb.append("An error occurred when checking type of data. field: [");
-                            sb.append(propertyName).append("], Value of colIndex: [").append(colIndex);
-                            sb.append("] and value: [").append(newVal).append("]. Error type: [");
-                            sb.append(cv.getAlias()).append("]");
-
-                            if (logger.isErrorEnabled()) {
-                                logger.error(sb.toString());
-                            }
-
-                            MappingException ex = new MappingException(sb.toString(), false, cv.getAlias());
-                            ex.setRow(rowIndex + 1);
-                            ex.setCol(colIndex + 1);
-
-                            if (cv instanceof AbstractColumnValidator) {
-                                ex.setSource(((AbstractColumnValidator) cv).getSource());
-                            }
-
-                            switch (strategy.getExceptionBehavior()) {
-                                case ThrowAll:
-                                    allEx.add(ex);
-                                    continue out;
-                                default:
-                                    throw ex;
-                            }
-                        }
-                    }
-
-                    bw.setPropertyValue(propertyName, newVal);
-                } catch (IndexOutOfBoundsException e) {
-                    if (logger.isErrorEnabled()) {
-                        StringBuffer sb = new StringBuffer();
-                        sb.append("An error Occurred when using parameter colIndex [");
-                        sb.append(colIndex).append("] on field: [").append(propertyName);
-                        sb.append("]. Exception: ").append(e.getMessage());
-                        logger.error(sb.toString());
-                    }
-
-                    throw new WorkingException(true);
-                } catch (BeanInstantiationException e) {
-                    if (logger.isErrorEnabled()) {
-                        logger.error(e.getMessage(), e);
-                    }
-
-                    throw new WorkingException(e, true);
-                } catch (Exception e) {
-                    if (e instanceof WorkingException) {
-                        throw (WorkingException) e;
-                    }
-
-                    if (logger.isErrorEnabled()) {
-                        logger.error(
-                            new StringBuffer()
-                                .append("Some errors have been occurred at row: [")
-                                .append(colIndex + 1)
-                                .append("]. Check it, please! Exception: ")
-                                .append(e.getMessage())
-                                .toString()
-                        );
-                    }
-
-                    throw new MappingException(e, true, "INTERNAL_ERR");
-                }
-            }
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private static void _refill(BeanWrapper bw, Map<Integer, WorkData> map, WorkbookStrategy strategy) throws WorkingException {
         PropertyDescriptor[] descriptors = bw.getPropertyDescriptors();
@@ -296,7 +83,7 @@ final class AnnotationColumnMappingAdapter {
 
             Method m = descriptor.getReadMethod();
 
-            if (m.isAnnotationPresent(ModelMapping.class)) {
+            if (m.isAnnotationPresent(BeanMapping.class)) {
                 Object val = bw.getPropertyValue(propertyName);
                 if (null == val) {
                     logger.warn("No ModelMapping was set. So ignore process this annotation.");
@@ -304,7 +91,7 @@ final class AnnotationColumnMappingAdapter {
                     continue;
                 }
 
-                ModelMapping mm = m.getAnnotation(ModelMapping.class);
+                BeanMapping mm = m.getAnnotation(BeanMapping.class);
                 Class<?> type = mm.value();
                 if (logger.isDebugEnabled()) {
                     logger.debug("Property: [" + propertyName + "], type: [" + type.getName() + "].");
@@ -372,7 +159,8 @@ final class AnnotationColumnMappingAdapter {
                         throw new MappingException(sb.toString(), true, INST_NOT_CONVERTER);
                     }
 
-                    map.put(colIndex, new DefaultWorkData(cc.conceal(val)));
+                    // TODO: 2019-08-06 modify here
+//                    map.put(colIndex, new DefaultWorkData(cc.conceal(val)));
                 } catch (BeansException e) {
                     if (logger.isErrorEnabled()) {
                         logger.error(e.getMessage(), e);

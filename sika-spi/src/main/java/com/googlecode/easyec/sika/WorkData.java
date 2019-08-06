@@ -19,7 +19,7 @@ import java.util.Date;
  */
 public abstract class WorkData implements Serializable {
 
-    private static final long serialVersionUID = 8946528323476044107L;
+    private static final long serialVersionUID = -809047917209226839L;
 
     /**
      * 工作数据类型的枚举类
@@ -93,11 +93,11 @@ public abstract class WorkData implements Serializable {
     /**
      * 通过给定的列转换器类，将此工作数据转换到指定的数据类型。
      *
-     * @param c   转换器类
-     * @param <T> 数据类型
+     * @param c     转换器类
+     * @param <OUT> 数据类型
      * @return 数据值
      */
-    public final <T> T getValue(ColumnConverter<T> c) {
+    public final <OUT> OUT getValue(ColumnConverter<Object, OUT> c) {
         Assert.notNull(c, "ColumnConverter object is null.");
 
         return c.adorn(value);

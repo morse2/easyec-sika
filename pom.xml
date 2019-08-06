@@ -9,6 +9,7 @@
         <module>sika-spi</module>
         <module>sika-csv</module>
         <module>sika-poi</module>
+        <module>sika-txt</module>
     </modules>
     <packaging>pom</packaging>
     <name>sika</name>

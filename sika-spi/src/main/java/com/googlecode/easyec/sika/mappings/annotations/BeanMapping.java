@@ -1,9 +1,8 @@
 package com.googlecode.easyec.sika.mappings.annotations;
 
 import com.googlecode.easyec.sika.converters.ColumnConverter;
-import com.googlecode.easyec.sika.converters.ModelConverter;
+import com.googlecode.easyec.sika.converters.BeanConverter;
 import com.googlecode.easyec.sika.converters.NoOpConverter;
-import com.googlecode.easyec.sika.validations.ColumnValidator;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -20,7 +19,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <pre>
  * public class Foo {
  *   private Bar bar;<br/>
- *   //@ModelMapper(Bar.class)
+ *   //@BeanMapper(Bar.class)
  *   public Bar getBar() { return this.bar; }
  * }<br/>
  * class Bar {
@@ -37,7 +36,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Retention(RUNTIME)
 @Target({ ANNOTATION_TYPE, METHOD })
-public @interface ModelMapping {
+public @interface BeanMapping {
 
     /**
      * 定义了映射的模型的实现类。
@@ -47,14 +46,6 @@ public @interface ModelMapping {
     Class<?> value();
 
     /**
-     * 定义实现了接口{@link ColumnValidator}的验证器。
-     *
-     * @return 返回列验证器的实现类
-     * @see ColumnValidator
-     */
-    Class<? extends ColumnValidator>[] validators() default { };
-
-    /**
      * 定义一个模型数据转换器的实现类。该类可以用来在正式为属性赋值前转换其值类型。<br/>
      * <b>注意：该属性只在填充对象时才有用，反向生成<code>{@link com.googlecode.easyec.sika.WorkData}</code>
      * 时，则无效。</b>
@@ -62,5 +53,5 @@ public @interface ModelMapping {
      * @return 返回列数据转换器的实现类
      * @see ColumnConverter
      */
-    Class<? extends ModelConverter> converter() default NoOpConverter.class;
+    Class<? extends BeanConverter> converter() default NoOpConverter.class;
 }

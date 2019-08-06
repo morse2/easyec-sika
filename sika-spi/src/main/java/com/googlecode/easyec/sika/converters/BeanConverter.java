@@ -8,7 +8,7 @@ package com.googlecode.easyec.sika.converters;
  *
  * @author JunJie
  */
-public interface ModelConverter<T> {
+public interface BeanConverter<T> {
 
     /**
      * 通过给定的值类型，转换为自定义的值类型。

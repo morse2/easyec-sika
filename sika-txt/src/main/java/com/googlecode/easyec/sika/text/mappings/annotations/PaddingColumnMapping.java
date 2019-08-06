@@ -1,7 +1,8 @@
-package com.googlecode.easyec.sika.mappings.annotations;
+package com.googlecode.easyec.sika.text.mappings.annotations;
 
 import com.googlecode.easyec.sika.converters.ColumnConverter;
 import com.googlecode.easyec.sika.converters.NoOpConverter;
+import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
 import org.springframework.core.annotation.AliasFor;
 

@@ -1,10 +1,10 @@
-package com.googlecode.easyec;
+package com.googlecode.easyec.sika.text.test;
 
 import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.mappings.AnnotationWorkbookRowHandler;
 import com.googlecode.easyec.sika.mappings.annotations.ColumnMapping;
-import com.googlecode.easyec.sika.mappings.annotations.GetColumnMapping;
-import com.googlecode.easyec.sika.mappings.annotations.PaddingColumnMapping;
+import com.googlecode.easyec.sika.mappings.annotations.ColumnReadMapping;
+import com.googlecode.easyec.sika.text.mappings.annotations.PaddingColumnMapping;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.BeanWrapperImpl;
@@ -28,7 +28,7 @@ public class TextTestCase {
             private String col1;
 
             @PaddingColumnMapping(position = 1, columnForRead = "A")
-            @GetColumnMapping(column = "C")
+            @ColumnReadMapping(column = "C")
             public String getCol1() {
                 return col1;
             }
@@ -56,11 +56,11 @@ public class TextTestCase {
         ColumnMapping ma = AnnotatedElementUtils.findMergedAnnotation(annotatedElement, ColumnMapping.class);
         AnnotationAttributes annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotatedElement, ma);
         Assert.assertNotNull(annotatedElement);
-        Set<GetColumnMapping> allMergedAnnotations = AnnotatedElementUtils.findAllMergedAnnotations(annotatedElement, GetColumnMapping.class);
+        Set<ColumnReadMapping> allMergedAnnotations = AnnotatedElementUtils.findAllMergedAnnotations(annotatedElement, ColumnReadMapping.class);
         Assert.assertNotNull(allMergedAnnotations);
 
         Map<String, Object> allAttributes = new HashMap<>();
-        for (GetColumnMapping mergedAnnotation : allMergedAnnotations) {
+        for (ColumnReadMapping mergedAnnotation : allMergedAnnotations) {
             Map<String, Object> attributes = AnnotationUtils.getAnnotationAttributes(mergedAnnotation);
             allAttributes.putAll(attributes);
         }

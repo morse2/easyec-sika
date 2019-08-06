@@ -1,8 +1,8 @@
 package com.googlecode.easyec.sika.mappings;
 
 import com.googlecode.easyec.sika.WorkingException;
-import com.googlecode.easyec.sika.converters.ModelConverter;
-import com.googlecode.easyec.sika.mappings.annotations.ModelMapping;
+import com.googlecode.easyec.sika.converters.BeanConverter;
+import com.googlecode.easyec.sika.mappings.annotations.BeanMapping;
 import com.googlecode.easyec.sika.support.WorkbookStrategy;
 import com.googlecode.easyec.sika.validations.AbstractColumnValidator;
 import com.googlecode.easyec.sika.validations.ColumnValidator;
@@ -69,7 +69,7 @@ public class BeanMappingParamResolver extends AbstractAnnotationMappingParamReso
                     // set original value.
                     beanParam.setOriginalValue(bwModel.getWrappedInstance());
                     // convert original value to resolved.
-                    processOriginalValue(getConverter(attributes, ModelConverter.class), beanParam);
+                    processOriginalValue(getConverter(attributes, BeanConverter.class), beanParam);
                     // validate resolved value.
                     processValidators(getValidators(attributes), rowIndex, strategy, beanParam);
                     // make as resolved.
@@ -95,10 +95,10 @@ public class BeanMappingParamResolver extends AbstractAnnotationMappingParamReso
 
     @Override
     protected Class<? extends Annotation> getAnnotationType() {
-        return ModelMapping.class;
+        return BeanMapping.class;
     }
 
-    protected void processOriginalValue(ModelConverter<?> converter, BeanAnnotationMappingParam param) {
+    protected void processOriginalValue(BeanConverter<?> converter, BeanAnnotationMappingParam param) {
         Object newVal = param.getOriginalValue();
         if (converter != null) {
             newVal = converter.adorn(newVal);

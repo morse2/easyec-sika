@@ -1,7 +1,7 @@
 package com.googlecode.easyec.sika.ss.impl.internal;
 
 import com.googlecode.easyec.sika.*;
-import com.googlecode.easyec.sika.converters.Object2StringConverter;
+import com.googlecode.easyec.sika.converters.StringColumnConverter;
 import com.googlecode.easyec.sika.mappings.*;
 import com.googlecode.easyec.sika.ss.ExcelCtrl;
 import com.googlecode.easyec.sika.ss.ExcelWriteProcess;
@@ -255,7 +255,7 @@ public class DefaultExcelRowDataWriteProcess extends AbstractExcelProcess implem
 
                     cell.setCellValue(
                         wb.getCreationHelper().createRichTextString(
-                            data.getValue(new Object2StringConverter())
+                            data.getValue(new StringColumnConverter())
                         )
                     );
             }

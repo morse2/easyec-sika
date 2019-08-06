@@ -165,7 +165,7 @@ public class ColumnMappingParamResolver extends AbstractAnnotationMappingParamRe
         return true;
     }
 
-    protected void processOriginalValue(ColumnConverter<?> converter, BeanPropertyAnnotationMappingParam param) {
+    protected void processOriginalValue(ColumnConverter<Object, ?> converter, BeanPropertyAnnotationMappingParam param) {
         Object newVal = param.getOriginalValue();
         if (converter != null) {
             newVal = converter.adorn(newVal);

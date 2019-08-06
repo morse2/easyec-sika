@@ -8,23 +8,14 @@ package com.googlecode.easyec.sika.converters;
  *
  * @author JunJie
  */
-public interface ColumnConverter<T> {
+public interface ColumnConverter<IN, OUT> {
 
     /**
-     * 通过给定的值类型，转换为自定义的值类型。
+     * 将给定的值转换成用户程序或工作本可识别
+     * 的对象类型。
      *
-     * @param val 从工作本中得到的数据
-     * @return 返回需要的值类型
+     * @param val 需要转换的值
+     * @return 转换后的值
      */
-    T adorn(Object val);
-
-    /**
-     * 将Bean对象中的指定字段的值
-     * 转换成工作本可以接受的值类型。
-     *
-     * @param original 原始值类型
-     * @return 工作本值类型
-     */
-    @Deprecated
-    Object conceal(T original);
+    OUT adorn(IN val);
 }
