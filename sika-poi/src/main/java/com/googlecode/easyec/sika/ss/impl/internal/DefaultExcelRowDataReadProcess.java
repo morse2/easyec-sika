@@ -26,7 +26,7 @@ public class DefaultExcelRowDataReadProcess extends AbstractExcelReadProcess {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void processPerRowDataOfSheet(WorkbookHandler handler, Sheet sheet, FormulaEvaluator fe) {
+    protected boolean processPerRowDataOfSheet(WorkbookHandler handler, Sheet sheet, FormulaEvaluator fe) {
         WorkbookHeader head = handler.getHeader();
         int headCount = head.getHeaderCount();
         int lastRowNum = getRowNum(sheet);
@@ -73,17 +73,19 @@ public class DefaultExcelRowDataReadProcess extends AbstractExcelReadProcess {
                 if (!handler.populate(dataMap)) break;
             } catch (WorkingException e) {
                 handler.doCatch(e);
-                if (e.isStop()) break;
+                if (e.isStop()) return false;
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
 
                 WorkingException ex = new WorkingException(e, true);
                 handler.doCatch(ex);
-                if (ex.isStop()) break;
+                if (ex.isStop()) return false;
             } finally {
                 dataMap.remove(j);
             }
         }
+
+        return true;
     }
 
     protected BeanReadMappingParamResolver createBeanMappingParamResolver() {

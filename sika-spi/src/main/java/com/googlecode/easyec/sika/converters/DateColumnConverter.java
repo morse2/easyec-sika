@@ -45,13 +45,13 @@ public class DateColumnConverter implements ColumnConverter<Object, Date> {
 
     protected String[] getDatePatterns() {
         return new String[] {
-            "yyyy-MM-dd",
-            "yyyy/MM/dd",
-            "MM/dd/yyyy",
             "yyyy-MM-dd HH:mm:ss",
             "yyyy-MM-dd HH:mm",
             "yyyyMMddHHmmss",
             "yyyyMMddHHmm",
+            "yyyy-MM-dd",
+            "yyyy/MM/dd",
+            "MM/dd/yyyy",
             "yyyyMMdd"
         };
     }

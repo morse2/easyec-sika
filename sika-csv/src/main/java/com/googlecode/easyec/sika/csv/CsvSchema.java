@@ -1,7 +1,7 @@
 package com.googlecode.easyec.sika.csv;
 
-import au.com.bytecode.opencsv.CSVParser;
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVWriter;
 
 /**
  * CSV的概要类。

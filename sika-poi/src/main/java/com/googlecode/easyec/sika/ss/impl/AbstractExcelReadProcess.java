@@ -1,6 +1,9 @@
 package com.googlecode.easyec.sika.ss.impl;
 
-import com.googlecode.easyec.sika.*;
+import com.googlecode.easyec.sika.WorkPage;
+import com.googlecode.easyec.sika.WorkbookHandler;
+import com.googlecode.easyec.sika.WorkbookReader;
+import com.googlecode.easyec.sika.WorkingException;
 import com.googlecode.easyec.sika.event.WorkbookHandleEvent;
 import com.googlecode.easyec.sika.event.WorkbookHandlerChangeListener;
 import com.googlecode.easyec.sika.event.WorkbookPostHandleListener;
@@ -37,9 +40,8 @@ public abstract class AbstractExcelReadProcess extends AbstractExcelProcess impl
                 break;
             }
 
-            if (!(handler instanceof WorkbookRowHandler)) {
-                logger.warn("WorkbookHandler must be instanceof WorkbookRowHandler. Actual type is: [{}]", handler);
-
+            // check type of WorkbookHandler
+            if (!accept(i, handler)) {
                 continue;
             }
 
@@ -66,16 +68,10 @@ public abstract class AbstractExcelReadProcess extends AbstractExcelProcess impl
 
                 // do init method
                 doInit(wb, handler);
-
-                // check type of WorkbookHandler
-                if (accept(i, handler)) {
-                    // process per row data
-                    processPerRowDataOfSheet(handler, sheet, fe);
-                }
-
+                // process per row data
+                boolean success = processPerRowDataOfSheet(handler, sheet, fe);
                 // do finish
-                handler.doFinish();
-
+                if (success) handler.doFinish();
                 // post event listener
                 WorkbookPostHandleListener postHandleListener = reader.getWorkbookPostHandleListener();
                 if (postHandleListener != null) {
@@ -105,6 +101,7 @@ public abstract class AbstractExcelReadProcess extends AbstractExcelProcess impl
      * @param handler <code>WorkbookHandler</code>
      * @param sheet   <code>Sheet</code>
      * @param fe      <code>FormulaEvaluator</code>
+     * @return 标记是否处理成功
      */
-    abstract protected void processPerRowDataOfSheet(WorkbookHandler handler, Sheet sheet, FormulaEvaluator fe);
+    abstract protected boolean processPerRowDataOfSheet(WorkbookHandler handler, Sheet sheet, FormulaEvaluator fe);
 }
