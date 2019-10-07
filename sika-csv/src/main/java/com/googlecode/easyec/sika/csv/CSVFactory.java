@@ -5,8 +5,6 @@ import com.googlecode.easyec.sika.csv.impl.internal.DefaultCSVRowDataReadProcess
 import com.googlecode.easyec.sika.csv.impl.internal.DefaultCSVRowDataWriteProcess;
 import com.opencsv.*;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -19,12 +17,9 @@ import java.io.Writer;
  *
  * @author JunJie
  */
-public final class CsvFactory {
+public final class CSVFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(CsvFactory.class);
-    private static final ThreadLocal<CsvFactory> local = new ThreadLocal<>();
-
-    private CsvFactory() { }
+    private CSVFactory() {}
 
     /**
      * 获得当前工厂类的实例对象。
@@ -32,16 +27,8 @@ public final class CsvFactory {
      *
      * @return <code>CsvFactory</code>对象
      */
-    public static CsvFactory getInstance() {
-        synchronized (local) {
-            CsvFactory factory = local.get();
-            if (factory == null) {
-                factory = new CsvFactory();
-                local.set(factory);
-            }
-
-            return factory;
-        }
+    public static CSVFactory getInstance() {
+        return new CSVFactory();
     }
 
     public void readLines(Reader reader, WorkbookRowHandler handler) throws WorkingException {

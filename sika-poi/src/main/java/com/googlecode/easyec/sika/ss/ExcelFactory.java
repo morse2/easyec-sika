@@ -22,20 +22,10 @@ import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
  */
 public final class ExcelFactory {
 
-    private static final ThreadLocal<ExcelFactory> _t = new ThreadLocal<>();
-
     private ExcelFactory() { /* no op */ }
 
     public static ExcelFactory getInstance() {
-        synchronized (_t) {
-            ExcelFactory factory = _t.get();
-            if (factory == null) {
-                factory = new ExcelFactory();
-                _t.set(factory);
-            }
-
-            return factory;
-        }
+        return new ExcelFactory();
     }
 
     @Deprecated

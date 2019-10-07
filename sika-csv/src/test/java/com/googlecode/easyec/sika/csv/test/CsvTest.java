@@ -4,9 +4,10 @@ import com.googlecode.easyec.sika.ListGrabber;
 import com.googlecode.easyec.sika.WorkData;
 import com.googlecode.easyec.sika.WorkbookRowCallback;
 import com.googlecode.easyec.sika.WorkingException;
-import com.googlecode.easyec.sika.csv.CsvFactory;
+import com.googlecode.easyec.sika.csv.CSVFactory;
 import com.googlecode.easyec.sika.data.DefaultWorkData;
 import com.googlecode.easyec.sika.mappings.AnnotationWorkbookRowHandler;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -37,7 +38,8 @@ public class CsvTest {
         };
         InputStream in = new ClassPathResource("files/test.csv").getInputStream();
         InputStreamReader reader = new InputStreamReader(in, UTF_8);
-        CsvFactory.getInstance().readLines(reader, handler);
+        CSVFactory.getInstance().readLines(reader, handler);
+        Assert.assertNotNull(handler);
     }
 
     @Test
@@ -60,7 +62,7 @@ public class CsvTest {
         };
 
         StringWriter w = new StringWriter();
-        CsvFactory.getInstance().writeLines(w, callback);
+        CSVFactory.getInstance().writeLines(w, callback);
         System.out.println(w.toString());
 
         /*ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
