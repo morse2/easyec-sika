@@ -29,7 +29,7 @@
     <scm>
         <developerConnection>scm:git:https://github.com/superego/easyec.git</developerConnection>
         <connection>scm:git:https://github.com/superego/easyec.git</connection>
-        <url>scm:githttps://github.com/superego/easyec.git</url>
+        <url>scm:git:https://github.com/superego/easyec.git</url>
     </scm>
 
     <developers>
