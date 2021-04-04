@@ -13,8 +13,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -166,6 +166,14 @@ public final class ExcelFactory {
                 logger.debug(e.getMessage(), e);
 
                 throw new WorkingException(e, true);
+            }
+            
+            /*
+             判断是否是<code>ExcelWorkPage</code>对象实例，
+             是则将当前Sheet对象设置进去
+             */
+            if (workPage instanceof ExcelWorkPage) {
+                ((ExcelWorkPage) workPage).setSheet(sheet);
             }
 
             List<Object> list;
