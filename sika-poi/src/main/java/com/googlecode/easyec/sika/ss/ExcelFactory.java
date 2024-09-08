@@ -135,7 +135,7 @@ public final class ExcelFactory {
         }*/
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int removeSheetCount = 0; // 需要执行删除工作表的次数
+        int removeSheetCount = 1; // 需要执行删除工作表的次数
 
         out:
         for (int i = 0; i < writer.size(); i++) {
@@ -160,8 +160,6 @@ public final class ExcelFactory {
             try {
                 // 从工作页标识的索引号中获取模板的工作页面
                 sheet = wb.cloneSheet(sheetIndex);
-                // 累加要删除模板的次数
-                removeSheetCount++;
             } catch (Exception e) {
                 logger.debug(e.getMessage(), e);
 
