@@ -63,12 +63,20 @@ public final class ExcelFactory {
     }
 
     public void read(InputStream in, WorkbookReader reader) throws WorkingException {
+        read(in, reader, null);
+    }
+
+    public void read(InputStream in, WorkbookReader reader, WorkbookReaderInterceptor interceptor) throws WorkingException {
         Workbook wb;
 
         try {
             assertEmptyWorkbookHandler(reader);
 
             wb = WorkbookFactory.create(in);
+
+            final int numberOfSheets = wb.getNumberOfSheets();
+            Optional.ofNullable(interceptor)
+                .ifPresent(i -> i.beforeRead(reader, numberOfSheets));
 
             doRead(wb, reader);
         } catch (IOException e) {
