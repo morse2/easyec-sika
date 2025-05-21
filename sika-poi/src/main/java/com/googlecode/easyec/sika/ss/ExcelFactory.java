@@ -13,8 +13,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -38,7 +38,7 @@ import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.CREATE_NULL_AS_B
 public final class ExcelFactory {
 
     private static final ThreadLocal<ExcelFactory> local = new ThreadLocal<ExcelFactory>();
-    private Logger logger = LoggerFactory.getLogger(ExcelFactory.class);
+    private final static Logger logger = LoggerFactory.getLogger(ExcelFactory.class);
 
     private ExcelFactory() { /* no op */ }
 
@@ -74,14 +74,23 @@ public final class ExcelFactory {
 
             wb = WorkbookFactory.create(in);
 
-            final int numberOfSheets = wb.getNumberOfSheets();
-            Optional.ofNullable(interceptor)
-                .ifPresent(i -> i.beforeRead(reader, numberOfSheets));
+            if (interceptor != null) {
+                int numberOfSheets = wb.getNumberOfSheets();
+                List<String> sheetNames = new ArrayList<>();
+                for (int i = 0; i < numberOfSheets; i++) {
+                    sheetNames.add(wb.getSheetName(i));
+                }
+
+                if (logger.isInfoEnabled()) {
+                    logger.info("Get sheet names: {} ",
+                        Arrays.toString(sheetNames.toArray()));
+                }
+
+                interceptor.beforeRead(sheetNames, numberOfSheets);
+            }
 
             doRead(wb, reader);
-        } catch (IOException e) {
-            throw new WorkingException(e, true);
-        } catch (InvalidFormatException e) {
+        } catch (IOException | InvalidFormatException e) {
             throw new WorkingException(e, true);
         } finally {
             IOUtils.closeQuietly(in);

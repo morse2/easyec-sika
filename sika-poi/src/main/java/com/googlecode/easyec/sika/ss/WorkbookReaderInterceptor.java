@@ -1,6 +1,8 @@
 package com.googlecode.easyec.sika.ss;
 
-import com.googlecode.easyec.sika.WorkbookReader;
+import com.googlecode.easyec.sika.WorkingException;
+
+import java.util.List;
 
 /**
  * Workbook读取拦截器接口类
@@ -8,5 +10,5 @@ import com.googlecode.easyec.sika.WorkbookReader;
 @FunctionalInterface
 public interface WorkbookReaderInterceptor {
 
-    void beforeRead(WorkbookReader reader, int numberOfSheets);
+    void beforeRead(List<String> sheetNames, int numberOfSheets) throws WorkingException;
 }
